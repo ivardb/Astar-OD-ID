@@ -1,0 +1,100 @@
+\documentclass[english]{article}
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=3cm,bmargin=3cm,lmargin=3cm,rmargin=3cm}
+
+\makeatletter
+\usepackage{url}
+
+\makeatother
+
+\usepackage{babel}
+
+
+\title{Research Plan for [put the temporary title of your subproject here]}
+\author{Put Your Name Here}
+%\date{Put the date here}
+
+\newcommand{\namelistlabel}[1]{\mbox{#1}\hfil}
+\newenvironment{namelist}[1]{%1
+\begin{list}{}
+    {
+        \let\makelabel\namelistlabel
+        \settowidth{\labelwidth}{#1}
+        \setlength{\leftmargin}{1.1\labelwidth}
+    }
+  }{%1
+\end{list}}
+
+\begin{document}
+\maketitle
+
+%\begin{namelist}{xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx}
+%\item[{\bf Title:}]
+%	A Very Good Thesis
+%\item[{\bf Author:}]
+%	Gosia Migut
+%\item[{\bf Responsible Professor:}]
+%	Mathijs de Weerdt
+%\item[{\bf (Optionally) Other Supervisor:}]
+%	Eva
+%\item[{\bf (Required for final version) Examiner:}]
+%	Another Professor (\emph{interested, but not involved})
+%\item[{\bf Peer group members:}]
+%	John Appleseed (MSc), Harry Btree (BSc), Mike C3PO (PhD)
+%(\emph{i.e., at least 3 other BSc/MSc/PhD students})
+%\end{namelist}
+
+
+\section*{Background of the research}
+In this section you should give some background to your
+research area. What is the problem you are tackling, and why is it
+worthwhile solving? Who has already done some work in this area,
+and what have they achieved? Refer by including full reference details in the reference section.
+What is still missing? This may be much more complex / far into the future than your contribution.
+
+
+\section*{Research Question}
+Now state explicitly the main question you aim to answer or the hypothesis you aim to
+test. 
+Argue why this is a reasonable hypothesis to test.
+Make references to the items listed in the reference section
+that back up your arguments, for example the work of Wessen~\cite{wessen}.
+Explain what you expect will be accomplished by undertaking this
+particular project.  
+
+Break down the main question(s) into sub-questions that enable you to tackle your research in a more step-by-step manner.
+Aim to formulate (sub-)questions that are sufficiently concrete, such that other students would be able to answer them with a single experiment or proof, and that you would be able to judge whether they have done well. E.g.\ it is better to say: "under which conditions (e.g.\ problem size) is method A better than method B?" than "How can you do better than method B?". Include objective criteria for success. E.g.\ ``lower runtime than algorithm A'', ``better quality than method B'' or ``using fewer data samples than C'', etc. Try to envision how you would present the ideal outcome. E.g.\ a plot with the criterium on the $y$-axis.
+
+\section*{Method}
+In this section you should outline how you intend to go
+about accomplishing the aims you have set in the previous
+section. Try to break your aims down into small, achievable tasks. 
+Which tools/software/data are you going to use? With whom do you intend to collaborate on what (if anyone)? What are their tasks? What are your tasks?
+Identify dependencies between these tasks.
+
+\section*{Planning of the research project}
+Try to estimate how long you will spend on each task, and draw up a timetable for each sub-task.
+Include the set deadline moments (midterm presentation, paper draft v1 for peer review, paper draft v2 for supervisor feedback, etc.) from the manual. Also include time for writing and don't postpone this to the latest moment (e.g.\ 1 page per day is pretty normal).
+Please include a timeline with the important dates, i.e., at least including the following:
+\begin{enumerate}
+\item milestones for completion of the identified (sub)tasks
+\item all meetings with interaction with your peer group
+\item all meetings with your supervisor (these may overlap with the above) -- think about what you'd like to discuss
+\item all meetings with your responsible professor (these may overlap with the above)  -- think about what you'd like to discuss
+\item deadlines according to the manual
+\item final conference day / presentation / meeting with examiner
+\end{enumerate}
+
+% use a system for generating the bibliographic information automatically from your database, e.g., use BibTex and/or Mendeley, EndNote, Papers, or \ldots
+%\bibliographystyle{plain}
+%\bibliography{template}
+
+%for convenience we use here the in-document bibliography
+\begin{thebibliography}{9}
+\bibitem{wessen} Ken Wessen, Preparing a thesis using \LaTeX~, private
+communication, 1994.
+\end{thebibliography}
+
+\end{document}

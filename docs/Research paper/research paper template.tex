@@ -1,0 +1,154 @@
+\documentclass[english]{article}
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=3.5cm,bmargin=4cm,lmargin=3.8cm,rmargin=3.8cm}
+
+\makeatletter
+\usepackage{url}
+
+\makeatother
+
+\usepackage{babel}
+\begin{document}
+
+\title{Research Paper Template}
+
+\author{Mathijs de Weerdt}
+\date{}
+
+\maketitle
+
+\begin{abstract}
+The abstract should be short and give the overall idea:
+what is the background, the research questions, what is contribution, and what are the main conclusions.
+It should be readable as a stand-alone text (preferably no references to the paper or outside literature).
+\end{abstract}
+
+
+\section{Introduction}
+\begin{itemize}
+\item Introduce the topic and explain why it is important (motivation!). %\emph{How should a scientific paper look like?}
+
+\item Relate to the most relevant existing work from the literature (use BibTeX), explain their contributions, and (critically) indicate what is still unanswered. 
+%\emph{The existing state of the art describes the setup of general scientific papers, e.g.\ see~\cite{hengl2002rules}, but this may be different for computer science papers.}
+
+\item Explain what the research questions for this work are. 
+This usually is a subset of the unanswered questions. %\emph{The aim of this work is therefore to provide a good template specifically for papers in the field of computer science.}
+
+\item Summarize the main contributions/conclusions of this research.
+NB: Make sure the title of the paper is a good match to the main research question / contribution / conclusion.
+
+\item Briefly indicate how the rest of the paper fits together to answer the research question.
+\end{itemize}
+
+For a longer research paper, a section with more elaborate discussion of the literature may follow, but for short (conference) submissions, this is often included in the introduction.
+
+\section{Methodology or Problem Description}
+Choose one that fits your research best:
+\subsection{Methodology}
+Typically in general research articles, the second section contains a description of the research methodology, explaining what you, the researcher, is doing to answer the research question(s), and why you have chosen this method.
+For purely analytical work this is a description of the data collection or experimental setup on how to test the hypothesis, with a motivation.
+In any case this section includes references to necessary background information.
+
+\subsection{Formal Problem Description}
+For some types of work in computer science the methodology is standard: analyze the problem (e.g., make assumptions and derive properties), present a new algorithm and its theoretical background, proving its correctness, and evaluate unproven aspects in simulation.
+Then an explanation of the methodology is often omitted, and the setup of the evaluation is part of a later section on the evaluation of the ideas.\footnote{This already shows that there is no single outline to be given for all papers.}
+In this case, explain relevant concepts, theory and models in this section (with references) and relate them to your research question.
+Also this section then typically contains a more precise, formal description of the problem.
+
+Do not forget to give this section another name, for example after the problem you are solving.
+
+\section{Your contribution}
+In computer science typically the third section contains an exposition of the main ideas, for example the development of a theory, the analysis of the problem (some proofs), a new algorithm, and potentially some theoretical analysis of the properties of the algorithm.
+
+Do not forget to give this section another name, for example after the method or idea you are presenting.
+
+Some more detailed suggestions for typical types of contributions in computer science are described in the following subsections.
+
+\subsection*{Experimental work}
+In this case, this section will mostly contain a description of the methods/algorithms you will be comparing. Although not all methods need to be described in detail (providing appropriate references are available), make sure that you reveal sufficient details to a reader not familiar with these methods to: a) obtain a high-level understanding of the method and differences between them, and b) understand your explanation of the results.
+
+\subsection*{Improvement of an idea}
+In this case, you would need to explain in detail how the improvement works. If it is based on some observation that can be proven, this is a good place to provide that proof (e.g., of the correctness of your approach). 
+
+%\subsection*{Literature survey}
+%If your contribution is a literature survey, then the organization of these ``middle'' sections very much depends on the way you want to present/organize the literature you are discussing.
+%First try to cluster papers that are similar in some aspect. Then think of how these clusters are related, from that you can think of a good order to discuss these clusters;this is sometimes called a bottom-up approach to writing a paper.
+%
+%In addition, you may try to think about the organization of the literature from a top-down perspective: try to ``take a step back'' and think about the field and what important questions/variants are and build a hierarchical categorization of the field.
+
+\section{Experimental Setup and Results}
+As discussed earlier, in many sciences the methodology is explained in section 2 and this section only discusses the results. 
+However, in computer science, most often the details of the evaluation setup are described here first (simulation environment, etc.).
+Very important here is that any skilled reader would be able to reproduce this setup and then obtain the same results.
+
+Then, results are reported in an accessible manner through figures (preferably with captions that allow them to be understood without going through the whole text), observations are made that clearly follow from the presented results.
+Conclusions are drawn that follow logically from the previous material.
+Sometimes the conclusions are in fact hypotheses, which in turn may give rise to new experiments to be validated.
+
+You may want to give this section another name.
+
+\section{Responsible Research}
+Reflect on the ethical aspects of your research and discuss the reproducibility of your methods.
+
+\section{Discussion}
+Results can be compared to known results and placed in a broader context.
+Provide a reflection on what has been concluded and how this was done.
+Then give a further possible explanation of results.
+
+You may give this section another name, or merge it with the one before or the one hereafter.
+
+\section{Conclusions and Future Work}
+Summarize the research question(s) and the answers to the research question(s).
+Make statements.
+Highlight interesting elements.
+
+Discuss open issues, possible improvements, and new questions that arise from this work; formulate recommendations for further research.
+
+ideally, this section can stand on its own: it should be readable without having read the earlier sections.
+
+\appendix
+\section{The obvious}
+\subsection{Reference use}
+\begin{itemize}
+\item use a system for generating the bibliographic information automatically from your database, e.g., use BibTex and/or Mendeley, EndNote, Papers, or \ldots
+\item all ideas, fragments, figures and data that have been quoted from other work have correct references
+\item literal quotations have quotation marks and page numbers
+\item paraphrases are not too close to the original
+\item the references and bibliography meet the requirements
+\item every reference in the text corresponds to an item in the bibliography and vice versa
+\end{itemize}
+
+\subsection{Structure}
+Paragraphs
+\begin{itemize}
+\item are well-constructed
+\item are not too long: each paragraph discusses one topic
+\item start with clear topic sentences
+\item are divided into a clear paragraph structure
+\item there is a clear line of argumentation from research question to conclusions
+\item scientific literature is reviewed critically
+\end{itemize}
+
+\subsection{Style}
+\begin{itemize}
+\item correct use of English: understandable, no spelling errors, acceptable grammar, no lexical mistakes 
+\item the style used is objective
+\item clarity: sentences are not too complicated (not too long), there is no ambiguity
+\item attractiveness: sentence length is varied, active voice and passive voice are mixed
+\end{itemize}
+
+\subsection{Tables and figures}
+\begin{itemize}
+\item all have a number and a caption
+\item all are referred to at least once in the text
+\item if copied, they contain a reference
+\item can be interpreted on their own (e.g. by means of a legend)
+\end{itemize}
+
+
+\bibliographystyle{plain}
+\bibliography{template}
+
+\end{document}
