@@ -16,6 +16,7 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage{graphicx}
 \graphicspath{ {./images/} }
+\usepackage{csquotes}
 
 \title{Research Plan for Multi-Agent Path Finding with Matching using A* with OD and ID}
 \author{Ivar de Bruin}
@@ -53,29 +54,72 @@
 \tableofcontents
 
 \section{Background of the research}
+\subsection{TUSS problem}
 The Dutch Railways (NS) is tasked with maintaining trains during the night. 
-The trains are routed to shunting yards where they can be cleaned and receive maintenance. 
-Here there is an NP-hard problem called the Train Unit Shunting and Servicing (TUSS) problem. 
+The trains are routed to shunting yards where they can be cleaned and receive maintenance.
+This problem was originally defined as the TUSP problem by Freling et al.\cite{freling2005TUSP}.
+However for this research we will be focusing more on the definition given by Mulderij et al. \cite{mulderij2020train} for the Train Unit Servicing and Shunting (TUSS) problem.
 One of the main questions in this problems is with regards to the capacity of these shunting yards. 
-To try and establish an upper bound to this capacity we try to find a relaxation to the problem. 
+To try and establish an upper bound to this capacity Mulderij et al propose to create a relaxation of the problem in the form of a Multi-Agent path finding problem (MAPF). 
+For this problem to be a relaxation it should include matching\cite{mulderij2020train}.
 
-The NP-hard Multi-Agent Path Finding (MAPF) describes multiple agents on a graph, moving from a start node to a goal node while avoiding collisions. 
-In this problem we try to minimize the sum of individual costs (SIC).
-To make this problem into a relaxation of the TUSS problem we also need to introduce matching, as there is no exact assignment per train for a destination but rather per class or type of train.
-\\\\%TODO: describe current state
-{\color{red}Description of current state of the research field to be added later}
+\subsection{Multi-Agent path finding}
+Multi-Agent path finding or MAPF is an NP-hard problem about getting a group of agents from their starting point to their assigned goal point without collisions. Stern provides a list of terminology and definitions for this problem in \cite{stern2019multiagent}. According to these definitions we can start defining our MAPF problem as a classical MAPF problem with $n$ agents as a $\langle G,s,t\rangle$ where:
+\begin{itemize}
+	\item $G = \langle V,E\rangle$ is an undirected graph of vertices $V$ and edges $E$. 
+	\item $s$ is a list of $n$ starting vertices such that $s_i$ denotes the starting vertex of agent $a_i$
+	\item $t$ is a list of $n$ target vertices such that $t_i$ denotes the target vertex of agent $a_i$ 
+\end{itemize}
+As the focus of this research is on introducing matching and comparing algorithms, $G$ will be simplified to a 4-neighbor grid with walls.
+This allows for easier implementations while still giving a fair comparison.
+\\\\
+A solution of a MAPF problem provides a path $\pi_i$ for each agent $a_i$ that defines the location of each agent at a moment $x$ as $\pi_i[x]$ and ends at $t_i$.
+For this set of paths to be a solution they need to be non-conflicting.
+For this research we will be using the following conflicts as defined by Stern\cite{stern2019multiagent}:
+\begin{itemize}
+	\item Edge conflict: An edge conflict occurs when two agents traverse the same edge at the same time.
+	\item Vertex conflict: A vertex conflict occurs when two agents are at the same vertex at the same time.
+\end{itemize}
+With these conflicts defined we can clearly describe a solution, to also define an optimal solution we need a cost function.
+For this we will use the sum of individual paths.
+\\\\
+As the final step according to Stern we need to define the behaviour at the target for which we will use stay at target which means the agents will remain at their target and as such can still cause vertex conflicts.
 
+\subsection{Matching}
+For a MAPF problem to be a relaxation of TUSS it needs to include matching.
+This means we have to redefine our problem tuple for a problem with $n$ agents to: $\langle G, s,t, cs, ct\rangle$ where:
+\begin{itemize}
+	\item $G$ is a 4-neighbor grid.
+	\item $s$ is a list of $n$ starting vertices such that $s_i$ denotes the starting vertex of agent $a_i$
+	\item $t$ is a list of $n$ target vertices
+	\item $cs$ is a list of $n$ colors such that $cs_i$ is the color of $s_i$ (and as such of agent $a_i$)
+	\item $ct$ is a list of $n$ colors such that $ct_i$ is the color of $t_i$
+\end{itemize}
+In this definition agents can go to any target vertex that has the same color.
+Formally this means that an agent $a_i$ has to end at a target vertex $t_j$ such that $cs_i=ct_j$
+
+\subsection{Algorithms}
+To solve a basic MAPF instance a few algorithms are commonly used: A* with operator decomposition and independence detection (A*+ID+OD)\cite{AStarIDOD_standley_2010}, Branch and cut and price\cite{bcp_lam_2019}, Conflict based search\cite{conflict_based_search_sharon_2015}, Increasing cost tree search\cite{icts_sharon_2013} and M*\cite{mstar_wagner_2011}.
+\\
+This research will focus on adapting A*+ID+OD to include matching while each of my peers work on one of the other algorithms.
+This will allow us to determine which of these algorithms is more suited for matching.
+
+\subsection{A* with operator decomposition and independence detection}
+A*+ID+OD is defined by Standley in \cite{AStarIDOD_standley_2010}.
 
 \section{Research Question}
-The main question that will be answered in this paper is: How can the MAPF algorithm A* with ID and OD be used to solve a relaxation of the TUSS problem when it is expanded with matching. We can then look at the following sub-questions:
+The main question that will be answered in this paper is: 
+\begin{quote}
+	How can the MAPF algorithm A* with ID and OD be used to solve a relaxation of the TUSS problem when it is expanded with matching.
+\end{quote}
+We can then look at the following sub-questions (which may change during the research project):
 \begin{itemize}
-	\item Which matching algorithm performs best when combined with A* with OD and ID
+	\item Which matching algorithm performs best when combined with A* with OD and ID?
+	\item Are these combined algorithms still optimal?
 	\item How does this combined algorithm perform compared to other MAPF algorithms expanded with matching?
 	\item Under which conditions should this algorithm be used?
 	\item Under which conditions should this algorithm not be used?
 \end{itemize}
-%TODO: Fix and expand
-{\color{red}Will be expanded and improved later this week}
 
 \section{Method}
 To complete this research the following things need to be accomplished:
@@ -133,7 +177,6 @@ This week the paper should be finished and the poster mostly finished.
 \subsection*{Week 11: Presentation}
 This week the poster will be handed in and the final presentation be prepared and given.
 
-\pagebreak
 \subsection*{Planning overview}
 \begin{figure}[h]
 	\includegraphics[width=\linewidth]{Planning}
