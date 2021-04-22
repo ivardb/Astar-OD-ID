@@ -30,11 +30,14 @@ class MapfmProblem(AStarProblem):
 
     def expand(self, parent: MapfmState) -> Iterable[Tuple[State, int]]:
         moves: List[List[Tuple[Coord, int, int]]] = []
-        for coord, acc in zip(parent.coords, parent.accumulated_cost):
+        for i, (coord, acc) in enumerate(zip(parent.coords, parent.accumulated_cost)):
             agent_moves = []
             for moved in self.grid.get_neighbors(coord):
                 agent_moves.append((moved, 0, acc + 1))
-            agent_moves.append((coord, acc + 1, 0))
+            if self.grid.get_heuristic(coord, i) == 0:
+                agent_moves.append((coord, acc + 1, 0))
+            else:
+                agent_moves.append((coord, 0, 1))
             moves.append(agent_moves)
         states = itertools.product(*moves)
         proper_states = []
@@ -73,7 +76,7 @@ def valid_state(old: MapfmState, new: MapfmState) -> bool:
         vertex_set.add(coord)
     # Check for edge conflicts, which will all be swapping conflicts in a grid
     for i in range(len(old.coords)):
-        for j in range(i, len(old.coords)):
+        for j in range(i+1, len(old.coords)):
             if old.coords[i] == new.coords[j] and old.coords[j] == new.coords[i]:
                 return False
     return True
