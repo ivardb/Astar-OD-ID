@@ -45,9 +45,10 @@ class Solver:
             if self.problem.is_final(current.state):
                 return get_path(current)
 
-            expanded.add(current)
+            expanded.add(current.state)
             states = self.problem.expand(current.state)
             for state, cost_increase in states:
                 if state not in expanded:
-                    heappush(frontier, Node(state, current.cost + cost_increase, self.problem.heuristic(state), current))
+                    node = Node(state, current.cost + cost_increase, self.problem.heuristic(state), current)
+                    heappush(frontier, node)
         return None
