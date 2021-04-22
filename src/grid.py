@@ -3,12 +3,14 @@ from typing import List, Tuple, Optional
 
 from mapfmclient import MarkedLocation
 
+from src.util import Coord
+
 
 class Grid:
 
     def __init__(self, grid: List[List[int]], width: int, height: int, starts: List[MarkedLocation],
                  goals: List[MarkedLocation], compute_heuristics=False):
-        self.walls = [[grid[y][x] == 1 for x in range(width)] for y in range(height)]
+        self.grid = grid
         self.w = width
         self.h = height
         self.starts = starts
@@ -26,33 +28,40 @@ class Grid:
         visited = set()
         heuristic = [[None for _ in range(self.w)] for _ in range(self.h)]
 
-        queue.put(((x, y), 0))
+        queue.put((Coord(x, y), 0))
         while not queue.empty():
-            pos, dist = queue.get()
-            visited.add(pos)
-            x, y = pos
+            coord, dist = queue.get()
+            visited.add(coord)
 
             # Already has a better distance
-            if heuristic[y][x] is not None and dist >= heuristic[y][x]:
+            if heuristic[coord.y][coord.x] is not None and dist >= heuristic[y][x]:
                 continue
-            heuristic[y][x] = dist
+            heuristic[coord.y][coord.x] = dist
 
-            for neighbor in self.get_neighbors(x, y):
+            for neighbor in self.get_neighbors(coord):
                 if neighbor not in visited:
                     queue.put((neighbor, dist + 1))
         return heuristic
 
-    def get_neighbors(self, x, y):
+    def get_neighbors(self, coords: Coord):
         res = list()
         for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
-            newX = x + dx
-            newY = y + dy
-            if 0 <= newX < self.w and 0 <= newY < self.h:
-                if not self.walls[newY][newX]:
-                    res.append((newX, newY))
+            new_coord = coords.move(dx, dy)
+            if 0 <= new_coord.x < self.w and 0 <= new_coord.y < self.h:
+                if not self.is_wall(new_coord):
+                    res.append(new_coord)
         return res
 
-    def get_heuristic(self, x: int, y: int, goal_index: int) -> Optional[int]:
+    def get_heuristic(self, coord, goal_index: int) -> Optional[int]:
         if self.heuristics is None:
             self.compute_heuristics()
-        return self.heuristics[goal_index][y][x]
+        return self.heuristics[goal_index][coord.y][coord.x]
+
+    def is_wall(self, coord) -> bool:
+        return self.grid[coord.y][coord.x] == 1
+
+    def is_final(self, coords) -> bool:
+        for coord, goal in zip(coords, self.goals):
+            if coord.x != goal.x or coord.y != goal.y:
+                return False
+        return True

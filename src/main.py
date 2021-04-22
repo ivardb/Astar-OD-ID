@@ -1,14 +1,26 @@
-from mapfmclient import Problem, Solution, MarkedLocation, MapfBenchmarker
+from typing import List, Optional
 
-from src.grid import Grid
+from mapfmclient import Problem, Solution, MapfBenchmarker
+
+from src.MAPFMproblem import MapfmProblem, MapfmState
+from src.solver import Solver
 
 
 def solve(problem: Problem) -> Solution:
-    grid = Grid(problem.grid, problem.width, problem.height, problem.starts, problem.goals, compute_heuristics=True)
-    return Solution.from_paths([])
+    solver = Solver(MapfmProblem(problem))
+    solution: Optional[List[MapfmState]] = solver.solve()
+    if solution is None:
+        print("Failed to find solution")
+        return None
+    paths = [[] for _ in solution[0].coords]
+    for path in solution:
+        for index, coord in enumerate(path.coords):
+            paths[index].append((coord.x, coord.y))
+    return Solution.from_paths(paths)
+
 
 
 if __name__ == '__main__':
-    api_token = open("apitoken.txt", "r").read().strip()
-    benchmarker = MapfBenchmarker(api_token, 3, "A*+ID+OD", "v0.1", True, solver=solve, cores=1)
+    api_token = open("../apitoken.txt", "r").read().strip()
+    benchmarker = MapfBenchmarker(api_token, 1, "A*", "0.0.1", True, solver=solve, cores=1)
     benchmarker.run()

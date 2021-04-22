@@ -106,6 +106,23 @@ This will allow us to determine which of these algorithms is more suited for mat
 
 \subsection{A* with operator decomposition and independence detection}
 A*+ID+OD is defined by Standley in \cite{AStarIDOD_standley_2010}.
+The idea of the algorithm is to improve the amount of nodes searched by A* in to major ways.
+
+\paragraph{Operator decomposition}
+When A* is used for MAPF it has a very large search space because when we expand a node a new node is created for every possible next move. 
+With multiple agents this means we need a new node for every combination of moves of all the agents. 
+This cause exponential node creation.
+Operator compositions reduces this branching factor by instead advancing one agents move at a time\cite{AStarIDOD_standley_2010}.
+This is done by creating two types of states: intermediary states and standard states.
+In standard states all agents have yet to move for that timestep, while in intermediary states some agents have already moved while other have not.
+This creation of intermediary nodes reduces the branching factor from exponential to linear while only increasing the depth of the search tree in a linear manner.
+As such operator decomposition reduces the amount of nodes by a significant amount.
+
+\paragraph{Independence detection}
+The second technique used to reduce the size of the search tree is independence detection.
+The idea here is to group agents on their own and then for each group create a non-conflicting solution.
+When conflicts arise that cannot be fixed easily the two conflicting groups are combined and this groups solution is recomputed.
+Depending on the problem, independence detection can cause incredible speedups as no time is spent on preventing conflicts that will never occur.
 
 \section{Research Question}
 The main question that will be answered in this paper is: 
@@ -150,8 +167,8 @@ This week will be spent on creating a basic MAPF solver in A*+ID+OD. This will m
 \subsection*{Week 3: Research matching}
 This week I will finish the algorithm if I did not finish it last week. 
 After creating a MAPF solver I will need to research how to introduce matching to it. 
-For this I will look at some papers but as matching with MAPF is not a research area with a lot of publications quite a bit of this research will be done through experimentation.
-Once I have an idea of what to do I will start extending the basic algorithm with matching.
+For this I will look at some papers such as \cite{ma2016TAPF} but as matching with MAPF is not a research area with a lot of publications quite a bit of this research will be done through experimentation.
+Once I have an idea of what to do I will start extending the basic algorithm with an initial matching algorithm that can then be iteratively tested, compared and improved.
 
 \subsection*{Week 4: Matching and preparing midterm}
 This week I will continue with the addition of matching to the algorithm. I will also start preparing for the midterm presentation on Wednesday of week 5
