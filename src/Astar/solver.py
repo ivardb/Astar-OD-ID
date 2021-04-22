@@ -1,6 +1,7 @@
-from abc import ABC, abstractmethod
 from heapq import heappush, heappop
-from typing import List, Optional, Hashable, Iterable, Tuple
+from typing import List, Optional
+
+from src.Astar.problem import AStarProblem, State
 
 
 class Node:
@@ -15,45 +16,7 @@ class Node:
         return (self.cost + self.heuristic) < (other.cost + other.heuristic)
 
 
-class State(ABC, Hashable):
-    @abstractmethod
-    def __eq__(self, other):
-        pass
-
-    def next(self, parent):
-        """
-        Optional next method. Called once on every child when it is made with it's parent.
-        :param parent: parent state
-        :return: nothing
-        """
-        return
-
-
-class AStarProblem(ABC):
-
-    @abstractmethod
-    def expand(self, parent: State) -> Iterable[Tuple[State, int]]:
-        """
-        :param parent:
-        :return: a list of tuples containing the next state,
-                 and the cost of going to that state.
-        """
-        raise NotImplemented
-
-    @abstractmethod
-    def initial_state(self) -> State:
-        raise NotImplemented
-
-    @abstractmethod
-    def is_final(self, state: State) -> bool:
-        raise NotImplemented
-
-    @abstractmethod
-    def heuristic(self, state: State) -> int:
-        raise NotImplemented
-
-
-def path(node: Node) -> List[State]:
+def get_path(node: Node) -> List[State]:
     curr = node
     path = []
     while curr is not None:
@@ -80,7 +43,7 @@ class Solver:
             if current in expanded:
                 continue
             if self.problem.is_final(current.state):
-                return path(current)
+                return get_path(current)
 
             expanded.add(current)
             states = self.problem.expand(current.state)

@@ -3,9 +3,9 @@ from typing import Tuple, Iterable, List, Optional
 
 import mapfmclient
 
-from src.grid import Grid
-from src.solver import State, AStarProblem
-from src.util import Coord
+from src.Astar.problem import AStarProblem, State
+from src.util.grid import Grid
+from src.util.coord import Coord
 
 
 class MapfmState(State):
