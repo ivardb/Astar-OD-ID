@@ -1,9 +1,9 @@
 from queue import Queue
-from typing import List, Tuple, Optional
+from typing import List, Optional
 
 from mapfmclient import MarkedLocation
 
-from src.util import Coord
+from src.util.coord import Coord
 
 
 class Grid:

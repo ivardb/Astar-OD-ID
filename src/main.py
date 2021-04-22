@@ -2,8 +2,8 @@ from typing import List, Optional
 
 from mapfmclient import Problem, Solution, MapfBenchmarker
 
-from src.MAPFMproblem import MapfmProblem, MapfmState
-from src.solver import Solver
+from src.Astar.MAPFMproblem import MapfmProblem, MapfmState
+from src.Astar.solver import Solver
 
 
 def solve(problem: Problem) -> Solution:
@@ -19,8 +19,7 @@ def solve(problem: Problem) -> Solution:
     return Solution.from_paths(paths)
 
 
-
 if __name__ == '__main__':
     api_token = open("../apitoken.txt", "r").read().strip()
-    benchmarker = MapfBenchmarker(api_token, 1, "A*", "0.0.1", True, solver=solve, cores=1)
+    benchmarker = MapfBenchmarker(api_token, 2, "A*", "0.0.1", True, solver=solve, cores=1)
     benchmarker.run()
