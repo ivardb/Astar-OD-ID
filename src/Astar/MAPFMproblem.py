@@ -24,8 +24,9 @@ class MapfmState(State):
 class MapfmProblem(AStarProblem):
 
     def __init__(self, problem: mapfmclient.Problem):
-        self.grid = Grid(problem.grid, problem.width, problem.height, problem.starts,
-                         problem.goals, compute_heuristics=True)
+        proper_starts = problem.starts
+        proper_goals = [next(filter(lambda g: g.color == start.color, problem.goals)) for start in proper_starts]
+        self.grid = Grid(problem.grid, problem.width, problem.height, proper_starts, proper_goals, compute_heuristics=True)
         self.initial = MapfmState(map(lambda i: (i.x, i.y), self.grid.starts))
 
     def expand(self, parent: MapfmState) -> Iterable[Tuple[State, int]]:
