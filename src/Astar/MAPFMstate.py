@@ -37,8 +37,10 @@ class MapfmState:
         Makes the agent the next intermediary agent with associated acc cost.
         Should be used together with the data retrieved from get_next()
         """
-        new_agents = list(self.new_agents).append(agent)
-        new_acc_cost = list(self.new_accumulated_cost).append(acc_cost)
+        new_agents = list(self.new_agents)
+        new_agents.append(agent)
+        new_acc_cost = list(self.new_accumulated_cost)
+        new_acc_cost.append(acc_cost)
         return MapfmState(self.agents, new_agents, self.accumulated_cost, new_acc_cost)
 
     def valid_next(self, new_agent: Agent) -> bool:
@@ -48,8 +50,9 @@ class MapfmState:
                 return False
 
             # Swapping conflict
-            if agent.coords == self.agents[len(self.new_agents)] and new_agent.coords == self.agents[i].coords:
+            if agent.coords == self.agents[len(self.new_agents)].coords and new_agent.coords == self.agents[i].coords:
                 return False
+        return True
 
     def is_standard(self) -> bool:
         return len(self.new_agents) == 0

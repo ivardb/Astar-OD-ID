@@ -13,14 +13,14 @@ def solve(problem: Problem) -> Solution:
     if solution is None:
         print("Failed to find solution")
         return None
-    paths = [[] for _ in solution[0].coords]
+    paths = [[] for _ in solution[0].agents]
     for path in solution:
-        for index, coord in enumerate(path.coords):
-            paths[index].append((coord.x, coord.y))
+        for index, agent in enumerate(path.agents):
+            paths[index].append((agent.coords.x, agent.coords.y))
     return Solution.from_paths(paths)
 
 
 if __name__ == '__main__':
     api_token = open("../apitoken.txt", "r").read().strip()
-    benchmarker = MapfBenchmarker(api_token, 1, "A*", "0.0.1", True, solver=solve, cores=1)
+    benchmarker = MapfBenchmarker(api_token, 3, "A* + OD", "0.1.0", True, solver=solve, cores=1)
     benchmarker.run()

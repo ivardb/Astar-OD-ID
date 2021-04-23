@@ -24,7 +24,7 @@ class MapfmProblem:
 
         for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
             new_agent = agent.move(dx, dy)
-            if self.grid.is_wall(new_agent.coords):
+            if not self.grid.is_walkable(new_agent.coords):
                 continue
             if not parent.valid_next(new_agent):
                 continue

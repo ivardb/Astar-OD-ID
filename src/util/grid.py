@@ -48,7 +48,7 @@ class Grid:
         res = list()
         for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
             new_coord = coords.move(dx, dy)
-            if not self.is_wall(new_coord):
+            if self.is_walkable(new_coord):
                 res.append(new_coord)
         return res
 
@@ -57,8 +57,8 @@ class Grid:
             self.compute_heuristics()
         return self.heuristics[goal_index][coord.y][coord.x]
 
-    def is_wall(self, coord) -> bool:
-        return self.grid[coord.y][coord.x] == 1
+    def is_walkable(self, coord) -> bool:
+        return 0 <= coord.x < self.w and 0 <= coord.y < self.h and self.grid[coord.y][coord.x] != 1
 
     def is_final(self, agents: Iterator[Agent]) -> bool:
         return all(self.on_goal(agent) for agent in agents)
