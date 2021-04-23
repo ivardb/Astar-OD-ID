@@ -40,7 +40,7 @@ class Solver:
 
         while frontier:
             current = heappop(frontier)
-            if current in expanded:
+            if current.state in expanded:
                 continue
             if self.problem.is_final(current.state):
                 return get_path(current)
