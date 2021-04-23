@@ -29,12 +29,11 @@ class MapfmProblem:
             if not parent.valid_next(new_agent):
                 continue
             res.append((parent.move_with_agent(new_agent, 0), acc + 1))
-        new_agent = agent.move(0, 0)
-        if parent.valid_next(new_agent):
-            if self.grid.on_goal(new_agent):
-                res.append((parent.move_with_agent(new_agent, acc + 1), 0))
+        if parent.valid_next(agent):
+            if self.grid.on_goal(agent):
+                res.append((parent.move_with_agent(agent, acc + 1), 0))
             else:
-                res.append((parent.move_with_agent(new_agent, 0), 1))
+                res.append((parent.move_with_agent(agent, 0), 1))
         return res
 
     def initial_state(self) -> MapfmState:
@@ -45,6 +44,8 @@ class MapfmProblem:
 
     def heuristic(self, state: MapfmState) -> int:
         h = 0
-        for i, agent in enumerate(state.agents):
+        for i, agent in enumerate(state.new_agents):
             h += self.grid.get_heuristic(agent.coords, i)
+        for j in range(len(state.new_agents), len(state.agents)):
+            h += self.grid.get_heuristic(state.agents[j].coords, j)
         return h

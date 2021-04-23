@@ -43,12 +43,12 @@ class Solver:
 
         while frontier:
             current = heappop(frontier)
-            if current in expanded:
-                continue
             if self.problem.is_final(current.state):
                 return get_path(current)
-
-            expanded.add(current.state)
+            if current.standard:
+                if current in expanded:
+                    continue
+                expanded.add(current.state)
             states = self.problem.expand(current.state)
             for state, cost_increase in states:
                 if state not in expanded:
