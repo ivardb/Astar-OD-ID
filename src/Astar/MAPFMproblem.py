@@ -23,10 +23,21 @@ class MapfmState(State):
 
 class MapfmProblem(AStarProblem):
 
-    def __init__(self, problem: mapfmclient.Problem):
-        proper_starts = problem.starts
-        proper_goals = [next(filter(lambda g: g.color == start.color, problem.goals)) for start in proper_starts]
-        self.grid = Grid(problem.grid, problem.width, problem.height, proper_starts, proper_goals, compute_heuristics=True)
+    def __init__(self, problem: mapfmclient.Problem, precompute_matching=False):
+        self.precompute = precompute_matching
+        proper_start = problem.starts
+        proper_goals = problem.goals
+        if self.precompute:
+            new_goals = []
+            for start in proper_start:
+                for goal in proper_goals:
+                    if start.color == goal.color:
+                        new_goals.append(goal)
+                        proper_goals.remove(goal)
+                        break
+            proper_goals = new_goals
+
+        self.grid = Grid(problem.grid, problem.width, problem.height, proper_start, proper_goals, compute_heuristics=True)
         self.initial = MapfmState(map(lambda i: (i.x, i.y), self.grid.starts))
 
     def expand(self, parent: MapfmState) -> Iterable[Tuple[State, int]]:
@@ -62,9 +73,25 @@ class MapfmProblem(AStarProblem):
         return self.grid.is_final(state.coords)
 
     def heuristic(self, state: MapfmState) -> int:
+        if self.precompute:
+            return self.heuristicMatched(state)
+        return self.heuristicColor(state)
+
+    def heuristicMatched(self, state: MapfmState) -> int:
         h = 0
         for i, coord in enumerate(state.coords):
             h += self.grid.get_heuristic(coord, i)
+        return h
+
+    def heuristicColor(self, state: MapfmState) -> int:
+        h = 0
+        for i, coord in enumerate(state.coords):
+            min_dist = float('inf')
+            for j, goal in enumerate(self.grid.goals):
+                if self.grid.starts[i].color == goal.color:
+                    if self.grid.get_heuristic(coord, j) < min_dist:
+                        min_dist = self.grid.get_heuristic(coord, j)
+            h += min_dist
         return h
 
 
