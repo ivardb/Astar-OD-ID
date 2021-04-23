@@ -7,7 +7,7 @@ from src.Astar.solver import Solver
 
 
 def solve(problem: Problem) -> Solution:
-    solver = Solver(MapfmProblem(problem))
+    solver = Solver(MapfmProblem(problem, precompute_matching=True))
     solution: Optional[List[MapfmState]] = solver.solve()
     if solution is None:
         print("Failed to find solution")
@@ -21,5 +21,5 @@ def solve(problem: Problem) -> Solution:
 
 if __name__ == '__main__':
     api_token = open("../apitoken.txt", "r").read().strip()
-    benchmarker = MapfBenchmarker(api_token, 10, "A*", "0.0.1", True, solver=solve, cores=1)
+    benchmarker = MapfBenchmarker(api_token, 11, "A*", "0.0.1", True, solver=solve, cores=1)
     benchmarker.run()
