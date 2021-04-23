@@ -13,7 +13,16 @@ class MapfmProblem:
 
     def __init__(self, problem: mapfmclient.Problem):
         proper_starts = problem.starts
-        proper_goals = [next(filter(lambda g: g.color == start.color, problem.goals)) for start in proper_starts]
+        proper_goals = problem.goals
+        new_goals = []
+        for agent in proper_starts:
+            for goal in proper_goals:
+                if agent.color == goal.color:
+                    new_goals.append(goal)
+                    proper_goals.remove(goal)
+                    break
+        proper_goals = new_goals
+
         self.grid = Grid(problem.grid, problem.width, problem.height, proper_starts, proper_goals,
                          compute_heuristics=True)
         self.initial = MapfmState(map(lambda i: Agent(Coord(i.x, i.y), i.color), self.grid.starts))

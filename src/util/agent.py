@@ -11,3 +11,9 @@ class Agent:
 
     def move(self, dx: int, dy: int) -> Agent:
         return Agent(self.coords.move(dx, dy), self.color)
+
+    def __eq__(self, other):
+        return self.coords == other.coords and self.color == other.color
+
+    def __hash__(self):
+        return tuple.__hash__((self.coords, self.color))

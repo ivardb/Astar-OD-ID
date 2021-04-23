@@ -22,5 +22,5 @@ def solve(problem: Problem) -> Solution:
 
 if __name__ == '__main__':
     api_token = open("../apitoken.txt", "r").read().strip()
-    benchmarker = MapfBenchmarker(api_token, 10, "A* + OD", "0.1.2", False, solver=solve, cores=1)
+    benchmarker = MapfBenchmarker(api_token, 11, "A* + OD", "0.1.2", True, solver=solve, cores=1)
     benchmarker.run()

@@ -58,10 +58,7 @@ class MapfmState:
         return len(self.new_agents) == 0
 
     def __hash__(self) -> int:
-        return tuple.__hash__((self.agents, self.new_agents, self.accumulated_cost, self.new_accumulated_cost))
+        return tuple.__hash__((self.agents, self.new_agents))
 
     def __eq__(self, other):
-        return self.agents == other.agents \
-               and self.accumulated_cost == other.accumulated_cost \
-               and self.new_agents == other.new_agents \
-               and self.new_accumulated_cost == other.new_accumulated_cost
+        return self.agents == other.agents and self.new_agents == other.new_agents

@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from src.Astar.MAPFMproblem import MapfmProblem
 from src.Astar.MAPFMstate import MapfmState
+from src.util.coord import Coord
 
 
 class Node:
@@ -46,7 +47,7 @@ class Solver:
             if self.problem.is_final(current.state):
                 return get_path(current)
             if current.standard:
-                if current in expanded:
+                if current.state in expanded:
                     continue
                 expanded.add(current.state)
             states = self.problem.expand(current.state)
@@ -55,3 +56,21 @@ class Solver:
                     node = Node(state, current.cost + cost_increase, self.problem.heuristic(state), current)
                     heappush(frontier, node)
         return None
+
+    def pretty_print(self, state):
+        grid = self.problem.grid
+        for j in range(grid.h):
+            for i in range(grid.w):
+                coord = Coord(i, j)
+                symbol = '.'
+                if grid.is_wall(coord):
+                    symbol = '#'
+                else:
+                    for k, agent in enumerate(state.agents):
+                        if agent.coords == coord:
+                            symbol = str(k)
+                            break
+                print(symbol, end='')
+            print()
+        print()
+

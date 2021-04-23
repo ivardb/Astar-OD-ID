@@ -58,7 +58,10 @@ class Grid:
         return self.heuristics[goal_index][coord.y][coord.x]
 
     def is_walkable(self, coord) -> bool:
-        return 0 <= coord.x < self.w and 0 <= coord.y < self.h and self.grid[coord.y][coord.x] != 1
+        return 0 <= coord.x < self.w and 0 <= coord.y < self.h and not self.is_wall(coord)
+
+    def is_wall(self, coord) -> bool:
+        return self.grid[coord.y][coord.x] == 1
 
     def is_final(self, agents: Iterator[Agent]) -> bool:
         return all(self.on_goal(agent) for agent in agents)
