@@ -61,7 +61,8 @@ class Grid:
         return self.grid[coord.y][coord.x] == 1
 
     def is_final(self, coords) -> bool:
-        for coord, goal in zip(coords, self.goals):
-            if coord.x != goal.x or coord.y != goal.y:
+        for i, coord in enumerate(coords):
+            color = self.starts[i].color
+            if not any(goal.color == color and goal.x == coord.x and goal.y == coord.y for goal in self.goals):
                 return False
         return True
