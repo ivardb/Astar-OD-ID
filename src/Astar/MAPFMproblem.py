@@ -1,12 +1,11 @@
-import itertools
-from typing import Tuple, Iterable, List
+from typing import Tuple, Iterable
 
 import mapfmclient
 
 from src.Astar.MAPFMstate import MapfmState
 from src.util.agent import Agent
-from src.util.grid import Grid
 from src.util.coord import Coord
+from src.util.grid import Grid
 
 
 class MapfmProblem:
