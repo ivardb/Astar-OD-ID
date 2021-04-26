@@ -1,3 +1,4 @@
+from functools import reduce
 from typing import Optional, List, Tuple
 
 from mapfmclient import Problem
@@ -7,6 +8,7 @@ from src.Astar.ODProblem import ODProblem
 from src.Astar.ODState import ODState
 from src.Astar.solver import Solver
 from src.util.grid import Grid
+from src.util.group import Group
 
 
 class IDProblem:
@@ -28,7 +30,9 @@ class IDProblem:
                          compute_heuristics=True)
 
     def solve(self) -> Optional[Solution]:
-        problem = ODProblem(self.grid, list(range(len(self.grid.starts))))
+        singleton_groups = [Group([n]) for n in range(len(self.grid.starts))]
+        super_group = reduce(lambda a, b: a.combine(b), singleton_groups, Group([]))
+        problem = ODProblem(self.grid, super_group)
         solver = Solver(problem)
         paths = solver.solve()
         if paths is None:

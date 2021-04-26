@@ -3,20 +3,21 @@ from typing import Tuple, Iterable
 from src.Astar.ODState import ODState
 from src.util.agent import Agent
 from src.util.coord import Coord
+from src.util.group import Group
 
 
 class ODProblem:
 
-    def __init__(self, grid, agent_ids):
+    def __init__(self, grid, group: Group):
         """
         Grid starts and goals should already be matched
         :param grid: Matched grid
-        :param agent_ids: The agents for which to make the problem
+        :param group: The group of agents for which to make the problem
         """
         self.grid = grid
-        self.agents_ids = agent_ids
+        self.agent_ids = group.agent_ids
         agents = []
-        for id in agent_ids:
+        for id in self.agent_ids:
             start = self.grid.starts[id]
             agents.append(Agent(id, Coord(start.x, start.y), start.color))
         self.initial = ODState(agents)
