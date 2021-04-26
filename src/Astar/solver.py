@@ -1,8 +1,9 @@
 from heapq import heappush, heappop
-from typing import List, Optional
+from typing import List, Optional, Tuple
+
+from mapfmclient.solution import Path
 
 from src.Astar.ODProblem import ODProblem
-from src.Astar.ODState import ODState
 from src.util.coord import Coord
 
 
@@ -19,14 +20,18 @@ class Node:
         return (self.cost + self.heuristic) < (other.cost + other.heuristic)
 
 
-def get_path(node: Node) -> List[ODState]:
+def get_path(node: Node) -> List[Tuple[int, Path]]:
     curr = node
-    path = []
+    state_path = []
     while curr is not None:
         if curr.standard:
-            path.insert(0, curr.state)
+            state_path.insert(0, curr.state)
         curr = curr.parent
-    return path
+    paths = [[] for _ in state_path[0].agents]
+    for path in state_path:
+        for index, agent in enumerate(path.agents):
+            paths[index].append((agent.coords.x, agent.coords.y))
+    return [(agent.id, Path.from_list(path)) for path, agent in zip(paths, state_path[0].agents)]
 
 
 class Solver:
@@ -34,7 +39,7 @@ class Solver:
     def __init__(self, problem: ODProblem):
         self.problem = problem
 
-    def solve(self) -> Optional[List[ODState]]:
+    def solve(self) -> Optional[List[Tuple[int, Path]]]:
         initial_state = self.problem.initial_state()
         initial_heuristic = self.problem.heuristic(initial_state)
 

@@ -11,11 +11,7 @@ def solve(starting_problem: Problem) -> Solution:
     if solution is None:
         print("Failed to find solution")
         return None
-    paths = [[] for _ in solution[0].agents]
-    for path in solution:
-        for index, agent in enumerate(path.agents):
-            paths[index].append((agent.coords.x, agent.coords.y))
-    return Solution.from_paths(paths)
+    return solution
 
 
 def get_version(debug, version) -> str:

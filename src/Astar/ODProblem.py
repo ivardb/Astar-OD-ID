@@ -52,3 +52,4 @@ class ODProblem:
         for j in range(len(state.new_agents), len(state.agents)):
             h += self.grid.get_heuristic(state.agents[j].coords, state.agents[j].id)
         return h
+

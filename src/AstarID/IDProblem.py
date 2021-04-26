@@ -1,6 +1,7 @@
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 from mapfmclient import Problem
+from mapfmclient.solution import Path, Solution
 
 from src.Astar.ODProblem import ODProblem
 from src.Astar.ODState import ODState
@@ -26,7 +27,15 @@ class IDProblem:
         self.grid = Grid(problem.grid, problem.width, problem.height, proper_starts, proper_goals,
                          compute_heuristics=True)
 
-    def solve(self) -> Optional[List[ODState]]:
+    def solve(self) -> Optional[Solution]:
         problem = ODProblem(self.grid, list(range(len(self.grid.starts))))
         solver = Solver(problem)
-        return solver.solve()
+        paths = solver.solve()
+        if paths is None:
+            return None
+        final_paths = [None for _ in range(len(self.grid.starts))]
+        for i, path in paths:
+            final_paths[i] = path
+        if all(path is not None for path in final_paths):
+            return Solution.from_paths(final_paths)
+        return None
