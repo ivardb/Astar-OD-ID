@@ -58,6 +58,7 @@ class MapfmProblem(AStarProblem):
             coords = []
             accumulators = []
             for coord, acc, c in state:
+                #TODO: Improve vertex conflict checking by putting it here
                 coords.append(coord)
                 accumulators.append(acc)
                 cost += c
