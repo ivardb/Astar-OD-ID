@@ -1,3 +1,4 @@
+import subprocess
 from typing import List, Optional
 
 from mapfmclient import Problem, Solution, MapfBenchmarker
@@ -20,7 +21,16 @@ def solve(problem: Problem) -> Solution:
     return Solution.from_paths(paths)
 
 
+def get_version(debug, version) -> str:
+    if not debug:
+        return version
+    git_hash = subprocess.check_output(["git", "describe", "--always"]).strip().decode()
+    return f"{git_hash}"
+
+
 if __name__ == '__main__':
+    version = "0.1.2"
+    debug = True
     api_token = open("../apitoken.txt", "r").read().strip()
-    benchmarker = MapfBenchmarker(api_token, 11, "A* + OD", "0.1.2", True, solver=solve, cores=1)
+    benchmarker = MapfBenchmarker(api_token, 1, "A* + OD", get_version(debug, version), debug, solver=solve, cores=1)
     benchmarker.run()
