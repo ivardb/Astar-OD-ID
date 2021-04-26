@@ -1,16 +1,13 @@
 import subprocess
-from typing import List, Optional
 
 from mapfmclient import Problem, Solution, MapfBenchmarker
 
-from src.Astar.MAPFMproblem import MapfmProblem
-from src.Astar.MAPFMstate import MapfmState
-from src.Astar.solver import Solver
+from src.AstarID.IDProblem import IDProblem
 
 
-def solve(problem: Problem) -> Solution:
-    solver = Solver(MapfmProblem(problem))
-    solution: Optional[List[MapfmState]] = solver.solve()
+def solve(starting_problem: Problem) -> Solution:
+    problem = IDProblem(starting_problem)
+    solution = problem.solve()
     if solution is None:
         print("Failed to find solution")
         return None
@@ -32,5 +29,5 @@ if __name__ == '__main__':
     version = "0.1.2"
     debug = True
     api_token = open("../apitoken.txt", "r").read().strip()
-    benchmarker = MapfBenchmarker(api_token, 1, "A* + OD", get_version(debug, version), debug, solver=solve, cores=1)
+    benchmarker = MapfBenchmarker(api_token, 9, "A* + OD", get_version(debug, version), debug, solver=solve, cores=1)
     benchmarker.run()

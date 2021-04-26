@@ -1,8 +1,8 @@
 from heapq import heappush, heappop
 from typing import List, Optional
 
-from src.Astar.MAPFMproblem import MapfmProblem
-from src.Astar.MAPFMstate import MapfmState
+from src.Astar.ODProblem import ODProblem
+from src.Astar.ODState import ODState
 from src.util.coord import Coord
 
 
@@ -19,7 +19,7 @@ class Node:
         return (self.cost + self.heuristic) < (other.cost + other.heuristic)
 
 
-def get_path(node: Node) -> List[MapfmState]:
+def get_path(node: Node) -> List[ODState]:
     curr = node
     path = []
     while curr is not None:
@@ -31,10 +31,10 @@ def get_path(node: Node) -> List[MapfmState]:
 
 class Solver:
 
-    def __init__(self, problem: MapfmProblem):
+    def __init__(self, problem: ODProblem):
         self.problem = problem
 
-    def solve(self) -> Optional[List[MapfmState]]:
+    def solve(self) -> Optional[List[ODState]]:
         initial_state = self.problem.initial_state()
         initial_heuristic = self.problem.heuristic(initial_state)
 
