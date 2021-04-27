@@ -37,27 +37,25 @@ class IDProblem:
                 return None
             update(paths, group_paths)
         avoided_conflicts = set()
-        conflict = find_conflict(paths)
+        conflict = self.find_conflict(paths)
         while conflict is not None:
             combine_groups = True
-            a, b, a_path, b_path = conflict
+            a, b, a_group, b_group = conflict
 
-            combo = (a,b)
+            combo = (a_group.agent_ids, b_group.agent_ids)
             if combo not in avoided_conflicts:
                 avoided_conflicts.add(combo)
-                # Try to fix conflict
-
                 # Try giving a priority
-                problem = ODProblem(self.grid, Group([a]), illegal_moves=b_path)
-                solver = Solver(problem, max_cost=len(a_path))
+                problem = ODProblem(self.grid, a_group, illegal_moves=[paths[i] for i in b_group.agent_ids])
+                solver = Solver(problem, max_cost=len(paths[a]))
                 solution = solver.solve()
                 if solution is not None:
                     combine_groups = False
                     update(paths, solution)
                 else:
                     # Give b priority
-                    problem = ODProblem(self.grid, Group([b]), illegal_moves=a_path)
-                    solver = Solver(problem, max_cost=len(b_path))
+                    problem = ODProblem(self.grid, b_group, illegal_moves=[paths[i] for i in a_group.agent_ids])
+                    solver = Solver(problem, max_cost=len(paths[b]))
                     solution = solver.solve()
                     if solution is not None:
                         combine_groups = False
@@ -71,8 +69,15 @@ class IDProblem:
                 update(paths, group_paths)
 
             # Find next conflict
-            conflict = find_conflict(paths)
+            conflict = self.find_conflict(paths)
         return AgentPath.to_solution(paths)
+
+    def find_conflict(self, paths: List[AgentPath]) -> Optional[Tuple[int, int, Group, Group]]:
+        for i in range(len(paths)):
+            for j in range(i+1, len(paths)):
+                if paths[i].conflicts(paths[j]):
+                    return i, j, self.groups.group_map[i], self.groups.group_map[j]
+        return None
 
     def solve_group(self, group):
         problem = ODProblem(self.grid, group)
@@ -83,14 +88,6 @@ class IDProblem:
 def update(paths, new_paths: Iterator[Tuple[int, AgentPath]]):
     for i, path in new_paths:
         paths[i] = path
-
-
-def find_conflict(paths: List[AgentPath]) -> Optional[Tuple[int, int, AgentPath, AgentPath]]:
-    for i in range(len(paths)):
-        for j in range(i+1, len(paths)):
-            if paths[i].conflicts(paths[j]):
-                return i, j, paths[i], paths[j]
-    return None
 
 
 class Groups:

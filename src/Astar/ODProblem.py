@@ -1,6 +1,7 @@
-from typing import Tuple, Iterable
+from typing import Tuple, Iterable, List
 
 from src.Astar.ODState import ODState
+from src.util.AgentPath import AgentPath
 from src.util.agent import Agent
 from src.util.coord import Coord
 from src.util.group import Group
@@ -8,7 +9,7 @@ from src.util.group import Group
 
 class ODProblem:
 
-    def __init__(self, grid, group: Group, illegal_moves=None):
+    def __init__(self, grid, group: Group, illegal_moves: List[AgentPath] = None):
         """
         Grid starts and goals should already be matched
         :param grid: Matched grid
@@ -21,6 +22,7 @@ class ODProblem:
             start = self.grid.starts[id]
             agents.append(Agent(id, Coord(start.x, start.y), start.color))
         self.initial = ODState(agents)
+        # TODO:Improve performance by creating dictionaries for lookup of both vertex and swapping conflicts
         self.illegal_moves = illegal_moves
 
     def expand(self, parent: ODState, current_time) -> Iterable[Tuple[ODState, int]]:
@@ -61,11 +63,12 @@ class ODProblem:
     def illegal(self, time: int, old: Coord, new: Coord) -> bool:
         if self.illegal_moves is None:
             return False
-        new_path = self.illegal_moves[time] if time < len(self.illegal_moves) else self.illegal_moves[-1]
-        old_path = self.illegal_moves[time-1] if time-1 < len(self.illegal_moves) else self.illegal_moves[-1]
-        if new == new_path:
-            return True
-        if new == old_path and old == new_path:
-            return True
+        for illegal_path in self.illegal_moves:
+            new_path = illegal_path[time] if time < len(illegal_path) else illegal_path[-1]
+            old_path = illegal_path[time-1] if time-1 < len(illegal_path) else illegal_path[-1]
+            if new == new_path:
+                return True
+            if new == old_path and old == new_path:
+                return True
         return False
 
