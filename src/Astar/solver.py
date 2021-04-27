@@ -19,7 +19,7 @@ class Node:
         self.time_step = time_step
 
     def __lt__(self, other):
-        return (self.cost + self.heuristic) < (other.cost + other.heuristic)
+        return ((self.cost + self.heuristic), self.heuristic) < ((other.cost + other.heuristic), other.heuristic)
 
 
 def get_path(node: Node) -> List[Tuple[int, Path]]:
@@ -47,6 +47,7 @@ class Solver:
         initial_state = self.problem.initial_state()
         initial_heuristic = self.problem.heuristic(initial_state)
 
+        # TODO: Think about if timestep should also be kept here or if the illegal moves need to be in the state
         expanded = set()
         frontier: List[Node] = []
         heappush(frontier, Node(0, initial_state, 0, initial_heuristic))
