@@ -4,12 +4,13 @@ from src.Astar.ODState import ODState
 from src.util.AgentPath import AgentPath
 from src.util.agent import Agent
 from src.util.coord import Coord
+from src.util.grid import Grid
 from src.util.group import Group
 
 
 class ODProblem:
 
-    def __init__(self, grid, group: Group, illegal_moves: List[AgentPath] = None, precompute_conflicts=True):
+    def __init__(self, grid: Grid, starts,  group: Group, illegal_moves: List[AgentPath] = None, precompute_conflicts=True):
         """
         Grid starts and goals should already be matched
         :param grid: Matched grid
@@ -19,7 +20,7 @@ class ODProblem:
         self.agent_ids = group.agent_ids
         agents = []
         for id in self.agent_ids:
-            start = self.grid.starts[id]
+            start = starts[id]
             agents.append(Agent(id, Coord(start.x, start.y), start.color))
         self.initial = ODState(agents)
         self.illegal_moves = illegal_moves

@@ -11,6 +11,7 @@ class AgentPath:
 
     def __init__(self, coords: Iterator[Coord]):
         self.coords = tuple(coords)
+        self.cost = None
 
     def __len__(self):
         return len(self.coords)

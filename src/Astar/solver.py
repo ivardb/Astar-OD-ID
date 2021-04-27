@@ -44,6 +44,9 @@ class Solver:
         initial_state = self.problem.initial_state()
         initial_heuristic = self.problem.heuristic(initial_state)
 
+        if initial_heuristic > self.max_cost:
+            return None
+
         expanded = set()
         frontier: List[Node] = []
         heappush(frontier, Node(0, initial_state, 0, initial_heuristic))

@@ -9,12 +9,11 @@ from src.util.coord import Coord
 
 class Grid:
 
-    def __init__(self, grid: List[List[int]], width: int, height: int, starts: List[MarkedLocation],
+    def __init__(self, grid: List[List[int]], width: int, height: int,
                  goals: List[MarkedLocation], compute_heuristics=False):
         self.grid = grid
         self.w = width
         self.h = height
-        self.starts = starts
         self.goals = goals
         self.heuristics = None
         if compute_heuristics:
