@@ -36,12 +36,41 @@ class IDProblem:
             if group_paths is None:
                 return None
             update(paths, group_paths)
+        avoided_conflicts = set()
         conflict = find_conflict(paths)
         while conflict is not None:
-            a, b = conflict
-            group = self.groups.combine_agents(a, b)
-            group_paths = self.solve_group(group)
-            update(paths, group_paths)
+            combine_groups = True
+            a, b, a_path, b_path = conflict
+
+            combo = (a,b)
+            if combo not in avoided_conflicts:
+                avoided_conflicts.add(combo)
+                # Try to fix conflict
+
+                # Try giving a priority
+                problem = ODProblem(self.grid, Group([a]))
+                solver = Solver(problem, max_cost=len(a_path.route), illegal_moves=b_path)
+                solution = solver.solve()
+                if solution is not None:
+                    combine_groups = False
+                    update(paths, solution)
+                else:
+                    # Give b priority
+                    problem = ODProblem(self.grid, Group([b]))
+                    solver = Solver(problem, max_cost=len(b_path.route), illegal_moves=a_path)
+                    solution = solver.solve()
+                    if solution is not None:
+                        combine_groups = False
+                        update(paths, solution)
+            # Combine groups
+            if combine_groups:
+                group = self.groups.combine_agents(a, b)
+                group_paths = self.solve_group(group)
+                if group_paths is None:
+                    return None
+                update(paths, group_paths)
+
+            # Find next conflict
             conflict = find_conflict(paths)
         return Solution.from_paths(paths)
 
@@ -56,11 +85,11 @@ def update(paths, new_paths: Iterator[Tuple[int, Path]]):
         paths[i] = path
 
 
-def find_conflict(paths: List[Path]) -> Optional[Tuple[int, int]]:
+def find_conflict(paths: List[Path]) -> Optional[Tuple[int, int, Path, Path]]:
     for i in range(len(paths)):
         for j in range(i+1, len(paths)):
             if conflicting(paths[i], paths[j]):
-                return i, j
+                return i, j, paths[i], paths[j]
     return None
 
 
