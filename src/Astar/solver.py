@@ -1,9 +1,8 @@
 from heapq import heappush, heappop
 from typing import List, Optional, Tuple
 
-from mapfmclient.solution import Path
-
 from src.Astar.ODProblem import ODProblem
+from src.util.AgentPath import AgentPath
 from src.util.agent import Agent
 from src.util.coord import Coord
 
@@ -22,7 +21,7 @@ class Node:
         return ((self.cost + self.heuristic), self.heuristic) < ((other.cost + other.heuristic), other.heuristic)
 
 
-def get_path(node: Node) -> List[Tuple[int, Path]]:
+def get_path(node: Node) -> List[Tuple[int, AgentPath]]:
     curr = node
     state_path = []
     while curr is not None:
@@ -32,22 +31,20 @@ def get_path(node: Node) -> List[Tuple[int, Path]]:
     paths = [[] for _ in state_path[0].agents]
     for path in state_path:
         for index, agent in enumerate(path.agents):
-            paths[index].append((agent.coords.x, agent.coords.y))
-    return [(agent.id, Path.from_list(path)) for path, agent in zip(paths, state_path[0].agents)]
+            paths[index].append(agent.coords)
+    return [(agent.id, AgentPath(path)) for path, agent in zip(paths, state_path[0].agents)]
 
 
 class Solver:
 
-    def __init__(self, problem: ODProblem, max_cost=None, illegal_moves=None):
+    def __init__(self, problem: ODProblem, max_cost=None):
         self.problem = problem
         self.max_cost = float("inf") if max_cost is None else max_cost
-        self.illegal_moves: Optional[Path] = illegal_moves
 
-    def solve(self) -> Optional[List[Tuple[int, Path]]]:
+    def solve(self) -> Optional[List[Tuple[int, AgentPath]]]:
         initial_state = self.problem.initial_state()
         initial_heuristic = self.problem.heuristic(initial_state)
 
-        # TODO: Think about if timestep should also be kept here or if the illegal moves need to be in the state
         expanded = set()
         frontier: List[Node] = []
         heappush(frontier, Node(0, initial_state, 0, initial_heuristic))
@@ -60,33 +57,15 @@ class Solver:
                 if current.state in expanded:
                     continue
                 expanded.add(current.state)
-            states = self.problem.expand(current.state)
+            states = self.problem.expand(current.state, current.time_step)
             for state, cost_increase in states:
                 if state not in expanded:
                     cost = current.cost + cost_increase
                     heuristic = self.problem.heuristic(state)
                     if cost + heuristic < self.max_cost:
-                        new_time = current.time_step + 1
-                        if self.illegal_moves is not None:
-                            for i, agent in enumerate(state.agents):
-                                if self.agent_conflicts(current.state.agents[i], agent, new_time):
-                                    break
-                            else:
-                                node = Node(new_time, state, cost, heuristic, current)
-                                heappush(frontier, node)
-                        else:
-                            node = Node(new_time, state, cost, heuristic, current)
-                            heappush(frontier, node)
+                        node = Node(current.time_step + 1, state, cost, heuristic, current)
+                        heappush(frontier, node)
         return None
-
-    def agent_conflicts(self, old_agent: Agent, agent: Agent, time: int) -> bool:
-        old_path = self.illegal_moves.route[-1] if time-1 >= len(self.illegal_moves.route) else self.illegal_moves.route[time-1]
-        cur_path = self.illegal_moves.route[-1] if time >= len(self.illegal_moves.route) else self.illegal_moves.route[time]
-        old_coords = (old_agent.coords.x, old_agent.coords.y)
-        cur_coords = (agent.coords.x, agent.coords.y)
-        if cur_path == cur_coords:
-            return True
-        return old_coords == cur_path and cur_coords == old_path
 
     def pretty_print(self, state):
         grid = self.problem.grid

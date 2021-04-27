@@ -8,7 +8,7 @@ from src.util.group import Group
 
 class ODProblem:
 
-    def __init__(self, grid, group: Group):
+    def __init__(self, grid, group: Group, illegal_moves=None):
         """
         Grid starts and goals should already be matched
         :param grid: Matched grid
@@ -21,8 +21,9 @@ class ODProblem:
             start = self.grid.starts[id]
             agents.append(Agent(id, Coord(start.x, start.y), start.color))
         self.initial = ODState(agents)
+        self.illegal_moves = illegal_moves
 
-    def expand(self, parent: ODState) -> Iterable[Tuple[ODState, int]]:
+    def expand(self, parent: ODState, current_time) -> Iterable[Tuple[ODState, int]]:
         res = []
         agent, acc = parent.get_next()
 
@@ -30,9 +31,12 @@ class ODProblem:
             new_agent = agent.move(dx, dy)
             if not self.grid.is_walkable(new_agent.coords):
                 continue
+            if self.illegal(current_time, agent.coords, new_agent.coords):
+                continue
             if not parent.valid_next(new_agent):
                 continue
             res.append((parent.move_with_agent(new_agent, 0), acc + 1))
+        # Add standing still as option
         if parent.valid_next(agent):
             if self.grid.on_goal(agent):
                 res.append((parent.move_with_agent(agent, acc + 1), 0))
@@ -53,4 +57,15 @@ class ODProblem:
         for j in range(len(state.new_agents), len(state.agents)):
             h += self.grid.get_heuristic(state.agents[j].coords, state.agents[j].id)
         return h
+
+    def illegal(self, time: int, old: Coord, new: Coord) -> bool:
+        if self.illegal_moves is None:
+            return False
+        new_path = self.illegal_moves[time] if time < len(self.illegal_moves) else self.illegal_moves[-1]
+        old_path = self.illegal_moves[time-1] if time-1 < len(self.illegal_moves) else self.illegal_moves[-1]
+        if new == new_path:
+            return True
+        if new == old_path and old == new_path:
+            return True
+        return False
 
