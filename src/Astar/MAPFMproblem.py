@@ -15,10 +15,10 @@ class MapfmState(State):
             accumulated_cost)
 
     def __hash__(self) -> int:
-        return tuple.__hash__((self.coords, self.accumulated_cost))
+        return hash(self.coords)
 
     def __eq__(self, other):
-        return self.coords == other.coords and self.accumulated_cost == other.accumulated_cost
+        return self.coords == other.coords
 
 
 class MapfmProblem(AStarProblem):
