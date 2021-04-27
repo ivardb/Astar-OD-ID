@@ -43,13 +43,10 @@ class ODProblem:
 
     def compute_swapping_conflict(self, illegal_moves_set: List[AgentPath]):
         max_t = max(map(lambda x: len(x), illegal_moves_set))
-        conflicts = [dict() for _ in range(max_t)]
-        # Create list for each timestep of dicts from new moves to old moves that cause a conflict
+        conflicts = [set() for _ in range(max_t)]
         for illegal_moves in illegal_moves_set:
             for t in range(1, len(illegal_moves)):
-                coords = conflicts[t].get(illegal_moves[t], [])
-                coords.append(illegal_moves[t - 1])
-                conflicts[t][illegal_moves[t]] = coords
+                conflicts[t-1].add((illegal_moves[t], illegal_moves[t-1]))
         return conflicts
 
     def expand(self, parent: ODState, current_time) -> Iterable[Tuple[ODState, int]]:
@@ -93,7 +90,7 @@ class ODProblem:
         if self.precompute_conflicts:
             if new in self.vertex_conflict[time]:
                 return True
-            if old in self.swapping_conflict[time].get(new, []):
+            if (old, new) in self.swapping_conflict[time]:
                 return True
             return False
         else:
