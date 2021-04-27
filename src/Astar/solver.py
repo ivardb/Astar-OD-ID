@@ -3,7 +3,6 @@ from typing import List, Optional, Tuple
 
 from src.Astar.ODProblem import ODProblem
 from src.util.AgentPath import AgentPath
-from src.util.agent import Agent
 from src.util.coord import Coord
 
 

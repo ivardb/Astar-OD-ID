@@ -45,7 +45,7 @@ class IDProblem:
             combo = (a_group.agent_ids, b_group.agent_ids)
             if combo not in avoided_conflicts:
                 avoided_conflicts.add(combo)
-                #TODO
+
                 # Try giving a priority
                 problem = ODProblem(self.grid, a_group, illegal_moves=[paths[i] for i in b_group.agent_ids])
                 solver = Solver(problem, max_cost=len(paths[a]))

@@ -48,11 +48,9 @@ class ODProblem:
         for illegal_moves in illegal_moves_set:
             for t in range(1, len(illegal_moves)):
                 coords = conflicts[t].get(illegal_moves[t], [])
-                coords.append(illegal_moves[t-1])
+                coords.append(illegal_moves[t - 1])
                 conflicts[t][illegal_moves[t]] = coords
         return conflicts
-
-
 
     def expand(self, parent: ODState, current_time) -> Iterable[Tuple[ODState, int]]:
         res = []
@@ -101,10 +99,9 @@ class ODProblem:
         else:
             for illegal_path in self.illegal_moves:
                 new_path = illegal_path[time] if time < len(illegal_path) else illegal_path[-1]
-                old_path = illegal_path[time-1] if time-1 < len(illegal_path) else illegal_path[-1]
+                old_path = illegal_path[time - 1] if time - 1 < len(illegal_path) else illegal_path[-1]
                 if new == new_path:
                     return True
                 if new == old_path and old == new_path:
                     return True
             return False
-
