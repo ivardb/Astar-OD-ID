@@ -33,7 +33,7 @@ class ODProblem:
         max_t = max(map(lambda x: len(x), illegal_moves_set))
         conflicts = [set() for _ in range(max_t)]
         for illegal_moves in illegal_moves_set:
-            t = 0
+            t = 1
             while t < len(illegal_moves):
                 conflicts[t].add(illegal_moves[t])
                 t += 1
@@ -89,10 +89,15 @@ class ODProblem:
         if self.illegal_moves is None:
             return False
         if self.precompute_conflicts:
-            if new in self.vertex_conflict[time]:
-                return True
-            if (old, new) in self.swapping_conflict[time]:
-                return True
+            if time < len(self.vertex_conflict):
+                if new in self.vertex_conflict[time]:
+                    return True
+
+                if (old, new) in self.swapping_conflict[time]:
+                    return True
+            else:
+                if new in self.vertex_conflict[-1]:
+                    return True
             return False
         else:
             for illegal_path in self.illegal_moves:
