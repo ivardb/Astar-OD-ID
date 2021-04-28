@@ -7,6 +7,7 @@ from mapfmclient.solution import Solution
 from src.Astar.ODProblem import ODProblem
 from src.Astar.solver import Solver
 from src.util.AgentPath import AgentPath
+from src.util.CAT import CAT
 from src.util.coord import Coord
 from src.util.grid import Grid
 from src.util.group import Group
@@ -19,6 +20,7 @@ class IDProblem:
                          compute_heuristics=True)
         self.groups = Groups([Group([n]) for n in range(len(problem.starts))])
 
+        # TODO: Keep starts static
         starts = []
         for i, goal in enumerate(self.grid.goals):
             goal_starts = []
@@ -44,7 +46,7 @@ class IDProblem:
     def solve_matching(self, starts, maximum) -> Optional[List[AgentPath]]:
         paths = PathSet(self.grid, starts, len(self.grid.goals))
         for group in self.groups.groups:
-            problem = ODProblem(self.grid, starts, group)
+            problem = ODProblem(self.grid, starts, group, CAT.empty())
             solver = Solver(problem, max_cost=paths.get_remaining_cost(group.agent_ids, maximum))
             group_paths = solver.solve()
             if group_paths is None:
@@ -61,7 +63,7 @@ class IDProblem:
                 avoided_conflicts.add(combo)
 
                 # Try giving a priority
-                problem = ODProblem(self.grid, starts, a_group, illegal_moves=[paths[i] for i in b_group.agent_ids])
+                problem = ODProblem(self.grid, starts, a_group, paths.cat, illegal_moves=[paths[i] for i in b_group.agent_ids])
                 solver = Solver(problem, max_cost=len(paths[a]))
                 solution = solver.solve()
                 if solution is not None:
@@ -69,7 +71,7 @@ class IDProblem:
                     paths.update(solution)
                 else:
                     # Give b priority
-                    problem = ODProblem(self.grid, starts, b_group, illegal_moves=[paths[i] for i in a_group.agent_ids])
+                    problem = ODProblem(self.grid, starts, b_group, paths.cat, illegal_moves=[paths[i] for i in a_group.agent_ids])
                     solver = Solver(problem, max_cost=len(paths[b]))
                     solution = solver.solve()
                     if solution is not None:
@@ -79,7 +81,7 @@ class IDProblem:
             if combine_groups:
                 group = self.groups.combine_agents(a, b)
                 print(f"Combining agents from groups of {a} and {b} into {group.agent_ids}")
-                problem = ODProblem(self.grid, starts, group)
+                problem = ODProblem(self.grid, starts, group, paths.cat)
                 solver = Solver(problem, max_cost=paths.get_remaining_cost(group.agent_ids, maximum))
                 group_paths = solver.solve()
                 if group_paths is None:
@@ -138,10 +140,13 @@ class PathSet:
         self.starts = starts
         self.paths: List[Optional[AgentPath]] = [None for _ in range(n)]
         self.costs: List[Optional[int]] = [None for _ in range(n)]
+        self.cat = CAT(len(starts), grid.w, grid.h)
 
     def update(self, new_paths: Iterator[Tuple[int, AgentPath]]):
         for i, path in new_paths:
+            self.cat.remove_cat(i, self.paths[i])
             self.paths[i] = path
+            self.cat.add_cat(i, path)
             self.costs[i] = get_cost(path)
 
     def get_remaining_cost(self, indexes: List[int], max_cost: int) -> int:
@@ -157,3 +162,5 @@ class PathSet:
 
     def __getitem__(self, item):
         return self.paths[item]
+
+

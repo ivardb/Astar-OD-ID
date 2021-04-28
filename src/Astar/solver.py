@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from heapq import heappush, heappop
 from typing import List, Optional, Tuple
 
@@ -8,16 +10,18 @@ from src.util.coord import Coord
 
 class Node:
 
-    def __init__(self, time_step, state, cost, heuristic, parent=None):
+    def __init__(self, time_step: int, state, cost, heuristic, conflicts: int, parent=None):
         self.state = state
         self.standard = state.is_standard()
         self.cost = cost
         self.heuristic = heuristic
+        self.conflicts = conflicts
         self.parent = parent
         self.time_step = time_step
 
-    def __lt__(self, other):
-        return ((self.cost + self.heuristic), self.heuristic) < ((other.cost + other.heuristic), other.heuristic)
+    def __lt__(self, other: Node):
+        return ((self.cost + self.heuristic), self.conflicts, self.heuristic) \
+               < ((other.cost + other.heuristic), other.conflicts, other.heuristic)
 
 
 def get_path(node: Node) -> List[Tuple[int, AgentPath]]:
@@ -49,7 +53,7 @@ class Solver:
 
         expanded = set()
         frontier: List[Node] = []
-        heappush(frontier, Node(0, initial_state, 0, initial_heuristic))
+        heappush(frontier, Node(0, initial_state, 0, initial_heuristic, 0))
         popped = 0
         while frontier:
             popped += 1
@@ -63,12 +67,12 @@ class Solver:
                     continue
                 expanded.add(current.state)
             states = self.problem.expand(current.state, current.time_step)
-            for state, cost_increase in states:
+            for state, cost_increase, conflicts in states:
                 if state not in expanded:
                     cost = current.cost + cost_increase
                     heuristic = self.problem.heuristic(state)
                     if cost + heuristic < self.max_cost:
-                        node = Node(current.time_step + 1, state, cost, heuristic, current)
+                        node = Node(current.time_step + 1, state, cost, heuristic, current.conflicts + conflicts, current)
                         heappush(frontier, node)
         return None
 

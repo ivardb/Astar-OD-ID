@@ -12,7 +12,7 @@ class Group:
         n = len(self.agent_ids)
         m = len(other.agent_ids)
         new_ids = []
-        while len(new_ids) < n and len(new_ids) < m:
+        while i < n and j < m:
             if self.agent_ids[i] < other.agent_ids[j]:
                 new_ids.append(self.agent_ids[i])
                 i += 1

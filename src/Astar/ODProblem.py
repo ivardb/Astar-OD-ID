@@ -1,6 +1,7 @@
 from typing import Tuple, Iterable, List, Set
 
 from src.Astar.ODState import ODState
+from src.util.CAT import CAT
 from src.util.AgentPath import AgentPath
 from src.util.agent import Agent
 from src.util.coord import Coord
@@ -10,7 +11,7 @@ from src.util.group import Group
 
 class ODProblem:
 
-    def __init__(self, grid: Grid, starts,  group: Group, illegal_moves: List[AgentPath] = None, precompute_conflicts=True):
+    def __init__(self, grid: Grid, starts,  group: Group, cat: CAT, illegal_moves: List[AgentPath] = None, precompute_conflicts=True):
         """
         Grid starts and goals should already be matched
         :param grid: Matched grid
@@ -24,6 +25,7 @@ class ODProblem:
             agents.append(Agent(id, Coord(start.x, start.y), start.color))
         self.initial = ODState(agents)
         self.illegal_moves = illegal_moves
+        self.cat = cat
         self.precompute_conflicts = precompute_conflicts
         if precompute_conflicts and illegal_moves is not None:
             self.vertex_conflict = self.compute_vertex_conflict(illegal_moves)
@@ -50,7 +52,11 @@ class ODProblem:
                 conflicts[t-1].add((illegal_moves[t], illegal_moves[t-1]))
         return conflicts
 
-    def expand(self, parent: ODState, current_time) -> Iterable[Tuple[ODState, int]]:
+    def expand(self, parent: ODState, current_time) -> Iterable[Tuple[ODState, int, int]]:
+        """
+
+        :rtype: List of new_states, expand_cost and conflicts
+        """
         res = []
         agent, acc = parent.get_next()
 
@@ -62,13 +68,13 @@ class ODProblem:
                 continue
             if not parent.valid_next(new_agent):
                 continue
-            res.append((parent.move_with_agent(new_agent, 0), acc + 1))
+            res.append((parent.move_with_agent(new_agent, 0), acc + 1, self.cat.get_cat(self.agent_ids, new_agent.coords)))
         # Add standing still as option
         if parent.valid_next(agent):
             if self.grid.on_goal(agent):
-                res.append((parent.move_with_agent(agent, acc + 1), 0))
+                res.append((parent.move_with_agent(agent, acc + 1), 0, self.cat.get_cat(self.agent_ids, new_agent.coords)))
             else:
-                res.append((parent.move_with_agent(agent, 0), 1))
+                res.append((parent.move_with_agent(agent, 0), 1, self.cat.get_cat(self.agent_ids, new_agent.coords)))
         return res
 
     def initial_state(self) -> ODState:
