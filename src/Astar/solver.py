@@ -59,7 +59,7 @@ class Solver:
             popped += 1
             current = heappop(frontier)
             if popped % 100000 == 0:
-                print(f"Count: {popped}, Heuristic: {current.heuristic}, Cost: {current.cost}, F: {current.heuristic + current.cost}")
+                print(f"Count: {popped}, Heuristic: {current.heuristic}, Cost: {current.cost}, F: {current.heuristic + current.cost}, Frontier size: {len(frontier)}")
             if self.problem.is_final(current.state):
                 return get_path(current)
             if current.standard:

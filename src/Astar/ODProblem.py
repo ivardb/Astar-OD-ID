@@ -10,8 +10,8 @@ from src.util.group import Group
 
 
 class ODProblem:
-
-    def __init__(self, grid: Grid, starts,  group: Group, cat: CAT, illegal_moves: List[AgentPath] = None, precompute_conflicts=True):
+    # TODO: Make illegal moves part of the actual state
+    def __init__(self, grid: Grid, assigned_goals,  group: Group, cat: CAT, illegal_moves: List[AgentPath] = None, precompute_conflicts=True):
         """
         Grid starts and goals should already be matched
         :param grid: Matched grid
@@ -19,9 +19,10 @@ class ODProblem:
         """
         self.grid = grid
         self.agent_ids = group.agent_ids
+        self.assigned_goals = assigned_goals
         agents = []
         for id in self.agent_ids:
-            start = starts[id]
+            start = grid.starts[id]
             agents.append(Agent(id, Coord(start.x, start.y), start.color))
         self.initial = ODState(agents)
         self.illegal_moves = illegal_moves
@@ -86,9 +87,9 @@ class ODProblem:
     def heuristic(self, state: ODState) -> int:
         h = 0
         for agent in state.new_agents:
-            h += self.grid.get_heuristic(agent.coords, agent.id)
+            h += self.grid.get_heuristic(agent.coords, self.assigned_goals[agent.id])
         for j in range(len(state.new_agents), len(state.agents)):
-            h += self.grid.get_heuristic(state.agents[j].coords, state.agents[j].id)
+            h += self.grid.get_heuristic(state.agents[j].coords, self.assigned_goals[state.agents[j].id])
         return h
 
     def illegal(self, time: int, old: Coord, new: Coord) -> bool:

@@ -16,26 +16,26 @@ from src.util.group import Group
 class IDProblem:
 
     def __init__(self, problem: Problem):
-        self.grid = Grid(problem.grid, problem.width, problem.height, problem.goals,
+        self.grid = Grid(problem.grid, problem.width, problem.height, problem.starts, problem.goals,
                          compute_heuristics=True)
-        self.groups = Groups([Group([n]) for n in range(len(problem.starts))])
+        self.groups = None
 
-        # TODO: Keep starts static
-        starts = []
-        for i, goal in enumerate(self.grid.goals):
-            goal_starts = []
-            for start in problem.starts:
+        goal_ids = []
+        for start in problem.starts:
+            ids = []
+            for i, goal in enumerate(self.grid.goals):
                 if start.color == goal.color:
-                    goal_starts.append(start)
-            goal_starts.sort(key=lambda x: self.grid.get_heuristic(Coord(x.x, x.y), i))
-            starts.append(goal_starts)
-        self.starts = filter(lambda x: len(x) == len(set(x)), itertools.product(*starts))
+                    ids.append(i)
+            ids.sort(key=lambda x: self.grid.get_heuristic(Coord(start.x, start.y), x))
+            goal_ids.append(ids)
+        self.assigned_goals = filter(lambda x: len(x) == len(set(x)), itertools.product(*goal_ids))
 
     def solve(self) -> Optional[Solution]:
         best = float("inf")
         best_solution = None
-        for start in self.starts:
-            solution = self.solve_matching(start, best)
+        for goals in self.assigned_goals:
+            print(f"Trying goal assignment of {goals} with maximum cost of {best}")
+            solution = self.solve_matching(goals, best)
             if solution is not None:
                 cost = sum(map(lambda x: get_cost(x), solution))
                 if cost < best:
@@ -43,10 +43,11 @@ class IDProblem:
                     best_solution = solution
         return AgentPath.to_solution(best_solution)
 
-    def solve_matching(self, starts, maximum) -> Optional[List[AgentPath]]:
-        paths = PathSet(self.grid, starts, len(self.grid.goals))
+    def solve_matching(self, assigned_goals, maximum) -> Optional[List[AgentPath]]:
+        paths = PathSet(self.grid, assigned_goals, len(self.grid.goals))
+        self.groups = Groups([Group([n]) for n in range(len(self.grid.starts))])
         for group in self.groups.groups:
-            problem = ODProblem(self.grid, starts, group, CAT.empty())
+            problem = ODProblem(self.grid, assigned_goals, group, CAT.empty())
             solver = Solver(problem, max_cost=paths.get_remaining_cost(group.agent_ids, maximum))
             group_paths = solver.solve()
             if group_paths is None:
@@ -63,7 +64,8 @@ class IDProblem:
                 avoided_conflicts.add(combo)
 
                 # Try giving a priority
-                problem = ODProblem(self.grid, starts, a_group, paths.cat, illegal_moves=[paths[i] for i in b_group.agent_ids])
+                problem = ODProblem(self.grid, assigned_goals, a_group, paths.cat,
+                                    illegal_moves=[paths[i] for i in b_group.agent_ids])
                 solver = Solver(problem, max_cost=len(paths[a]))
                 solution = solver.solve()
                 if solution is not None:
@@ -71,7 +73,8 @@ class IDProblem:
                     paths.update(solution)
                 else:
                     # Give b priority
-                    problem = ODProblem(self.grid, starts, b_group, paths.cat, illegal_moves=[paths[i] for i in a_group.agent_ids])
+                    problem = ODProblem(self.grid, assigned_goals, b_group, paths.cat,
+                                        illegal_moves=[paths[i] for i in a_group.agent_ids])
                     solver = Solver(problem, max_cost=len(paths[b]))
                     solution = solver.solve()
                     if solution is not None:
@@ -81,7 +84,7 @@ class IDProblem:
             if combine_groups:
                 group = self.groups.combine_agents(a, b)
                 print(f"Combining agents from groups of {a} and {b} into {group.agent_ids}")
-                problem = ODProblem(self.grid, starts, group, paths.cat)
+                problem = ODProblem(self.grid, assigned_goals, group, paths.cat)
                 solver = Solver(problem, max_cost=paths.get_remaining_cost(group.agent_ids, maximum))
                 group_paths = solver.solve()
                 if group_paths is None:
@@ -135,12 +138,12 @@ class Groups:
 
 class PathSet:
 
-    def __init__(self, grid: Grid, starts: List[MarkedLocation], n):
+    def __init__(self, grid: Grid, assigned_goals, n):
         self.grid = grid
-        self.starts = starts
+        self.assigned_goals = tuple(assigned_goals)
         self.paths: List[Optional[AgentPath]] = [None for _ in range(n)]
         self.costs: List[Optional[int]] = [None for _ in range(n)]
-        self.cat = CAT(len(starts), grid.w, grid.h)
+        self.cat = CAT(n, grid.w, grid.h)
 
     def update(self, new_paths: Iterator[Tuple[int, AgentPath]]):
         for i, path in new_paths:
@@ -158,9 +161,9 @@ class PathSet:
         return max_cost - sum(self.get_cost(i) for i in range(len(self.costs)) if i not in indexes)
 
     def get_cost(self, index):
-        return self.costs[index] if self.costs[index] is not None else self.grid.get_heuristic(Coord(self.starts[index].x, self.starts[index].y), index)
+        return self.costs[index] if self.costs[index] is not None else \
+            self.grid.get_heuristic(Coord(self.grid.starts[index].x, self.grid.starts[index].y),
+                                    self.assigned_goals[index])
 
     def __getitem__(self, item):
         return self.paths[item]
-
-
