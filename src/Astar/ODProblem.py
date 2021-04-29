@@ -44,9 +44,9 @@ class ODProblem:
         # Add standing still as option
         if parent.valid_next(agent):
             if self.grid.on_goal(agent):
-                res.append((parent.move_with_agent(agent, acc + 1, self.illegal_moves, current_time + 1), 0, self.cat.get_cat(self.agent_ids, new_agent.coords)))
+                res.append((parent.move_with_agent(agent, acc + 1, self.illegal_moves, current_time + 1), 0, self.cat.get_cat(self.agent_ids, agent.coords)))
             else:
-                res.append((parent.move_with_agent(agent, 0, self.illegal_moves, current_time + 1), 1, self.cat.get_cat(self.agent_ids, new_agent.coords)))
+                res.append((parent.move_with_agent(agent, 0, self.illegal_moves, current_time + 1), 1, self.cat.get_cat(self.agent_ids, agent.coords)))
         return res
 
     def initial_state(self) -> ODState:
