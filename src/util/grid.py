@@ -9,7 +9,7 @@ from src.util.coord import Coord
 
 class Grid:
 
-    def __init__(self, grid: List[List[int]], width: int, height: int, starts: List[MarkedLocation],
+    def __init__(self, grid: List[List[int]], width: int, height: int,  starts: List[MarkedLocation],
                  goals: List[MarkedLocation], compute_heuristics=False):
         self.grid = grid
         self.w = width
