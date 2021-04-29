@@ -1,7 +1,7 @@
-import itertools
 from typing import Optional, List, Tuple, Iterator
 
-from mapfmclient import Problem, MarkedLocation
+import itertools
+from mapfmclient import Problem
 from mapfmclient.solution import Solution
 
 from src.Astar.ODProblem import ODProblem
@@ -45,6 +45,7 @@ class IDProblem:
 
     def solve_matching(self, assigned_goals, maximum) -> Optional[List[AgentPath]]:
         paths = PathSet(self.grid, assigned_goals, len(self.grid.goals))
+        # Create initial paths for the individual agents. Very quick because of the heuristic used
         self.groups = Groups([Group([n]) for n in range(len(self.grid.starts))])
         for group in self.groups.groups:
             problem = ODProblem(self.grid, assigned_goals, group, CAT.empty())
@@ -52,36 +53,47 @@ class IDProblem:
             group_paths = solver.solve()
             if group_paths is None:
                 return None
+            # Update the path and CAT table
             paths.update(group_paths)
+
+        # Start looking for conflicts
         avoided_conflicts = set()
         conflict = self.find_conflict(paths.paths)
         while conflict is not None:
             combine_groups = True
             a, b, a_group, b_group = conflict
 
+            # Check if the conflict has been solved before. If so it has clearly failed
             combo = (a_group.agent_ids, b_group.agent_ids)
             if combo not in avoided_conflicts:
                 avoided_conflicts.add(combo)
 
-                # Try giving a priority
+                # Try rerunning a while the b moves are not possible
                 problem = ODProblem(self.grid, assigned_goals, a_group, paths.cat,
                                     illegal_moves=[paths[i] for i in b_group.agent_ids])
+
+                # The maximum cost that it can have while still being optimal
                 maximum_cost = get_cost(paths[a]) + sum(get_cost(paths[i]) for i in b_group.agent_ids)
                 solver = Solver(problem, max_cost=maximum_cost)
                 solution = solver.solve()
                 if solution is not None:
+                    # If a solution is found we can update the paths and we don't need to combine anything
                     combine_groups = False
                     paths.update(solution)
                 else:
-                    # Give b priority
+                    # Try redoing b by making a illegal
                     problem = ODProblem(self.grid, assigned_goals, b_group, paths.cat,
                                         illegal_moves=[paths[i] for i in a_group.agent_ids])
+
+                    # The maximum cost that it can have while still being optimal
                     maximum_cost = get_cost(paths[b]) + sum(get_cost(paths[i]) for i in a_group.agent_ids)
                     solver = Solver(problem, max_cost=maximum_cost)
                     solution = solver.solve()
                     if solution is not None:
+                        # If a solution is found we can update the paths and we don't need to combine anything
                         combine_groups = False
                         paths.update(solution)
+
             # Combine groups
             if combine_groups:
                 group = self.groups.combine_agents(a, b)

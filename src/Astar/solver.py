@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from heapq import heappush, heappop
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 from src.Astar.ODProblem import ODProblem
 from src.util.AgentPath import AgentPath

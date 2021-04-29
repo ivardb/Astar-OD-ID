@@ -10,6 +10,16 @@ class ODState:
     def __init__(self, agents: Iterator[Agent], new_agents: Optional[Iterator[Agent]] = None,
                  accumulated_cost: Optional[Iterator[int]] = None, new_accumulated_cost: Optional[Iterator[int]] = None,
                  illegal_moves_set: Optional[List[AgentPath]] = None, time_step: Optional[int] = None):
+        """
+        Create a state object as used by the A*+OD solver
+        :param agents: The agents in their pre-move state
+        :param new_agents: The agents in their post-move state.
+        :param accumulated_cost: The accumulated cost for each agent
+        :param new_accumulated_cost:  The accumulated cost for each post-move agent
+        :param illegal_moves_set: Set of predetermined paths.
+                Are added to the state when necessary to simplify conflict detection with these paths
+        :param time_step: The time step we are in
+        """
         self.agents = tuple(agents)
 
         # If enough intermediary states make them permanent
@@ -26,11 +36,14 @@ class ODState:
             self.accumulated_cost = self.new_accumulated_cost
             self.new_accumulated_cost = ()
 
+        # Named lambda for getting the move from the illegal_moves at the correct time step
         def get_illegal(illegal_moves):
-            return illegal_moves[time_step] if time_step < len(illegal_moves) else illegal_moves[-1]
+            return illegal_moves[time_step + 1] if time_step + 1 < len(illegal_moves) else illegal_moves[-1]
 
-        self.illegal_size = None
+        self.illegal_size = 0
 
+        # If we have a standard state make the predetermined/illegal moves,
+        # this way the valid_next method will automatically check for conflicts
         if len(self.new_agents) == 0 and illegal_moves_set is not None and time_step is not None:
             self.new_agents = tuple(Agent(illegal_moves.agent_id, get_illegal(illegal_moves), illegal_moves.color) for illegal_moves in illegal_moves_set)
             self.illegal_size = len(self.new_agents)
@@ -69,9 +82,8 @@ class ODState:
         return True
 
     def is_standard(self) -> bool:
-        if self.illegal_size is not None:
-            return len(self.new_agents) == self.illegal_size
-        return len(self.new_agents) == 0
+        # A state is standard if either there are no non-predetermined post_move agents
+        return len(self.new_agents) == self.illegal_size
 
     def __hash__(self) -> int:
         return tuple.__hash__((self.agents, self.new_agents))
