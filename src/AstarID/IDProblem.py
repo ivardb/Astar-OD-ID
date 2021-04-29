@@ -66,7 +66,8 @@ class IDProblem:
                 # Try giving a priority
                 problem = ODProblem(self.grid, assigned_goals, a_group, paths.cat,
                                     illegal_moves=[paths[i] for i in b_group.agent_ids])
-                solver = Solver(problem, max_cost=len(paths[a]))
+                maximum_cost = get_cost(paths[a]) + sum(get_cost(paths[i]) for i in b_group.agent_ids)
+                solver = Solver(problem, max_cost=maximum_cost)
                 solution = solver.solve()
                 if solution is not None:
                     combine_groups = False
@@ -75,7 +76,8 @@ class IDProblem:
                     # Give b priority
                     problem = ODProblem(self.grid, assigned_goals, b_group, paths.cat,
                                         illegal_moves=[paths[i] for i in a_group.agent_ids])
-                    solver = Solver(problem, max_cost=len(paths[b]))
+                    maximum_cost = get_cost(paths[b]) + sum(get_cost(paths[i]) for i in a_group.agent_ids)
+                    solver = Solver(problem, max_cost=maximum_cost)
                     solution = solver.solve()
                     if solution is not None:
                         combine_groups = False
@@ -107,6 +109,8 @@ def get_cost(path: AgentPath):
     cost = len(path)
     last = path[-1]
     i = 2
+    if i > len(path):
+        return cost
     while path[-i] == last:
         cost -= 1
         i += 1
@@ -145,8 +149,9 @@ class PathSet:
         self.costs: List[Optional[int]] = [None for _ in range(n)]
         self.cat = CAT(n, grid.w, grid.h)
 
-    def update(self, new_paths: Iterator[Tuple[int, AgentPath]]):
-        for i, path in new_paths:
+    def update(self, new_paths: Iterator[AgentPath]):
+        for path in new_paths:
+            i = path.agent_id
             self.cat.remove_cat(i, self.paths[i])
             self.paths[i] = path
             self.cat.add_cat(i, path)

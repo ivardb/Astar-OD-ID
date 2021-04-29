@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from typing import Tuple, Optional, Iterator
+from typing import Tuple, Optional, Iterator, List
 
+from src.util.AgentPath import AgentPath
 from src.util.agent import Agent
 
 
 class ODState:
-    def __init__(self, agents: Iterator[Agent], new_agents=None, accumulated_cost: Optional[Iterator[int]] = None, new_accumulated_cost=None):
+    def __init__(self, agents: Iterator[Agent], new_agents: Optional[Iterator[Agent]] = None,
+                 accumulated_cost: Optional[Iterator[int]] = None, new_accumulated_cost: Optional[Iterator[int]] = None,
+                 illegal_moves_set: Optional[List[AgentPath]] = None, time_step: Optional[int] = None):
         self.agents = tuple(agents)
 
         # If enough intermediary states make them permanent
@@ -23,6 +26,16 @@ class ODState:
             self.accumulated_cost = self.new_accumulated_cost
             self.new_accumulated_cost = ()
 
+        def get_illegal(illegal_moves):
+            return illegal_moves[time_step] if time_step < len(illegal_moves) else illegal_moves[-1]
+
+        self.illegal_size = None
+
+        if len(self.new_agents) == 0 and illegal_moves_set is not None and time_step is not None:
+            self.new_agents = tuple(Agent(illegal_moves.agent_id, get_illegal(illegal_moves), illegal_moves.color) for illegal_moves in illegal_moves_set)
+            self.illegal_size = len(self.new_agents)
+            self.new_accumulated_cost = tuple(0 for _ in range(len(self.new_agents)))
+
         assert len(self.new_agents) == len(self.new_accumulated_cost)
         assert len(self.agents) == len(self.accumulated_cost)
 
@@ -33,7 +46,7 @@ class ODState:
         i = len(self.new_agents)
         return self.agents[i], self.accumulated_cost[i]
 
-    def move_with_agent(self, agent, acc_cost) -> ODState:
+    def move_with_agent(self, agent, acc_cost, illegal_moves_set: List[AgentPath], time_step) -> ODState:
         """
         Makes the agent the next intermediary agent with associated acc cost.
         Should be used together with the data retrieved from get_next()
@@ -42,7 +55,7 @@ class ODState:
         new_agents.append(agent)
         new_acc_cost = list(self.new_accumulated_cost)
         new_acc_cost.append(acc_cost)
-        return ODState(self.agents, new_agents, self.accumulated_cost, new_acc_cost)
+        return ODState(self.agents, new_agents, self.accumulated_cost, new_acc_cost, illegal_moves_set=illegal_moves_set, time_step=time_step)
 
     def valid_next(self, new_agent: Agent) -> bool:
         for i, agent in enumerate(self.new_agents):
@@ -56,6 +69,8 @@ class ODState:
         return True
 
     def is_standard(self) -> bool:
+        if self.illegal_size is not None:
+            return len(self.new_agents) == self.illegal_size
         return len(self.new_agents) == 0
 
     def __hash__(self) -> int:

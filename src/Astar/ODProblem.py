@@ -10,48 +10,21 @@ from src.util.group import Group
 
 
 class ODProblem:
-    # TODO: Make illegal moves part of the actual state
-    def __init__(self, grid: Grid, assigned_goals,  group: Group, cat: CAT, illegal_moves: List[AgentPath] = None, precompute_conflicts=True):
-        """
-        Grid starts and goals should already be matched
-        :param grid: Matched grid
-        :param group: The group of agents for which to make the problem
-        """
+
+    def __init__(self, grid: Grid, assigned_goals, group: Group, cat: CAT, illegal_moves: List[AgentPath] = None):
         self.grid = grid
         self.agent_ids = group.agent_ids
         self.assigned_goals = assigned_goals
         agents = []
+        if illegal_moves is not None:
+            for moves in illegal_moves:
+                agents.append(Agent(moves.agent_id, moves[0], moves.color))
         for id in self.agent_ids:
             start = grid.starts[id]
             agents.append(Agent(id, Coord(start.x, start.y), start.color))
-        self.initial = ODState(agents)
+        self.initial = ODState(agents, illegal_moves_set=illegal_moves, time_step=1)
         self.illegal_moves = illegal_moves
         self.cat = cat
-        self.precompute_conflicts = precompute_conflicts
-        if precompute_conflicts and illegal_moves is not None:
-            self.vertex_conflict = self.compute_vertex_conflict(illegal_moves)
-            self.swapping_conflict = self.compute_swapping_conflict(illegal_moves)
-
-    def compute_vertex_conflict(self, illegal_moves_set) -> List[Set[Coord]]:
-        max_t = max(map(lambda x: len(x), illegal_moves_set))
-        conflicts = [set() for _ in range(max_t)]
-        for illegal_moves in illegal_moves_set:
-            t = 1
-            while t < len(illegal_moves):
-                conflicts[t].add(illegal_moves[t])
-                t += 1
-            while t < max_t:
-                conflicts[t].add(illegal_moves[-1])
-                t += 1
-        return conflicts
-
-    def compute_swapping_conflict(self, illegal_moves_set: List[AgentPath]):
-        max_t = max(map(lambda x: len(x), illegal_moves_set))
-        conflicts = [set() for _ in range(max_t)]
-        for illegal_moves in illegal_moves_set:
-            for t in range(1, len(illegal_moves)):
-                conflicts[t-1].add((illegal_moves[t], illegal_moves[t-1]))
-        return conflicts
 
     def expand(self, parent: ODState, current_time) -> Iterable[Tuple[ODState, int, int]]:
         """
@@ -65,17 +38,15 @@ class ODProblem:
             new_agent = agent.move(dx, dy)
             if not self.grid.is_walkable(new_agent.coords):
                 continue
-            if self.illegal(current_time, agent.coords, new_agent.coords):
-                continue
             if not parent.valid_next(new_agent):
                 continue
-            res.append((parent.move_with_agent(new_agent, 0), acc + 1, self.cat.get_cat(self.agent_ids, new_agent.coords)))
+            res.append((parent.move_with_agent(new_agent, 0, self.illegal_moves, current_time + 1), acc + 1, self.cat.get_cat(self.agent_ids, new_agent.coords)))
         # Add standing still as option
         if parent.valid_next(agent):
             if self.grid.on_goal(agent):
-                res.append((parent.move_with_agent(agent, acc + 1), 0, self.cat.get_cat(self.agent_ids, new_agent.coords)))
+                res.append((parent.move_with_agent(agent, acc + 1, self.illegal_moves, current_time + 1), 0, self.cat.get_cat(self.agent_ids, new_agent.coords)))
             else:
-                res.append((parent.move_with_agent(agent, 0), 1, self.cat.get_cat(self.agent_ids, new_agent.coords)))
+                res.append((parent.move_with_agent(agent, 0, self.illegal_moves, current_time + 1), 1, self.cat.get_cat(self.agent_ids, new_agent.coords)))
         return res
 
     def initial_state(self) -> ODState:
@@ -91,27 +62,3 @@ class ODProblem:
         for j in range(len(state.new_agents), len(state.agents)):
             h += self.grid.get_heuristic(state.agents[j].coords, self.assigned_goals[state.agents[j].id])
         return h
-
-    def illegal(self, time: int, old: Coord, new: Coord) -> bool:
-        if self.illegal_moves is None:
-            return False
-        if self.precompute_conflicts:
-            if time < len(self.vertex_conflict):
-                if new in self.vertex_conflict[time]:
-                    return True
-
-                if (old, new) in self.swapping_conflict[time]:
-                    return True
-            else:
-                if new in self.vertex_conflict[-1]:
-                    return True
-            return False
-        else:
-            for illegal_path in self.illegal_moves:
-                new_path = illegal_path[time] if time < len(illegal_path) else illegal_path[-1]
-                old_path = illegal_path[time - 1] if time - 1 < len(illegal_path) else illegal_path[-1]
-                if new == new_path:
-                    return True
-                if new == old_path and old == new_path:
-                    return True
-            return False

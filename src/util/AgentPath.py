@@ -9,9 +9,10 @@ from src.util.coord import Coord
 
 class AgentPath:
 
-    def __init__(self, coords: Iterator[Coord]):
+    def __init__(self, agent_id: int, color: int, coords: Iterator[Coord]):
+        self.agent_id = agent_id
+        self.color = color
         self.coords = tuple(coords)
-        self.cost = None
 
     def __len__(self):
         return len(self.coords)

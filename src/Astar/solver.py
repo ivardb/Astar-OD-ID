@@ -24,7 +24,7 @@ class Node:
                < ((other.cost + other.heuristic), other.conflicts, other.heuristic)
 
 
-def get_path(node: Node) -> List[Tuple[int, AgentPath]]:
+def get_path(node: Node) -> List[AgentPath]:
     curr = node
     state_path = []
     while curr is not None:
@@ -35,7 +35,7 @@ def get_path(node: Node) -> List[Tuple[int, AgentPath]]:
     for path in state_path:
         for index, agent in enumerate(path.agents):
             paths[index].append(agent.coords)
-    return [(agent.id, AgentPath(path)) for path, agent in zip(paths, state_path[0].agents)]
+    return [AgentPath(agent.id, agent.color, path) for path, agent in zip(paths, state_path[0].agents)]
 
 
 class Solver:
@@ -44,7 +44,7 @@ class Solver:
         self.problem = problem
         self.max_cost = float("inf") if max_cost is None else max_cost
 
-    def solve(self) -> Optional[List[Tuple[int, AgentPath]]]:
+    def solve(self) -> Optional[List[AgentPath]]:
         initial_state = self.problem.initial_state()
         initial_heuristic = self.problem.heuristic(initial_state)
 
