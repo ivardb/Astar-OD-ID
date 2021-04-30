@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from heapq import heappush, heappop
-from typing import List, Optional
+from typing import List, Optional, Set
 
 from src.Astar.ODProblem import ODProblem
+from src.Astar.ODState import ODState
 from src.util.AgentPath import AgentPath
 from src.util.coord import Coord
 
@@ -52,7 +53,8 @@ class Solver:
         if initial_heuristic + initial_cost > self.max_cost:
             return None
 
-        expanded = set()
+        expanded: Set[ODState] = set()
+        seen: Set[ODState] = set()
         frontier: List[Node] = []
         heappush(frontier, Node(0, initial_state, initial_cost, initial_heuristic, 0))
         popped = 0
@@ -60,21 +62,33 @@ class Solver:
             popped += 1
             current = heappop(frontier)
             if popped % 100000 == 0:
-                print(f"Count: {popped}, Heuristic: {current.heuristic}, Cost: {current.cost}, F: {current.f}, Frontier size: {len(frontier)}")
+                print(f"Count: {popped}, Heuristic: {current.heuristic}, Cost: {current.cost}, F: {current.f}, "
+                      f"Frontier size: {len(frontier)}, Seen size: {len(seen)} Expanded Size: {len(expanded)}")
             if self.problem.is_final(current.state):
                 return get_path(current)
-            if current.standard:
-                if current.state in expanded:
-                    continue
-                expanded.add(current.state)
+            if current.standard and current.state in expanded:
+                continue
             states = self.problem.expand(current.state, current.time_step)
+
+            put_back = False
+            put_back_f = float("inf")
             for state, cost_increase, conflicts in states:
-                if state not in expanded:
-                    cost = current.cost + cost_increase
-                    heuristic = self.problem.heuristic(state)
-                    if cost + heuristic <= self.max_cost:
-                        node = Node(current.time_step + 1, state, cost, heuristic, current.conflicts + conflicts, current)
-                        heappush(frontier, node)
+                cost = current.cost + cost_increase
+                heuristic = self.problem.heuristic(state)
+                if cost + heuristic == current.f:
+                    if state in seen:
+                        continue
+                    node = Node(current.time_step + 1, state, cost, heuristic, current.conflicts + conflicts, current)
+                    heappush(frontier, node)
+                    seen.add(state)
+                elif current.f < cost + heuristic <= self.max_cost:
+                    put_back = True
+                    put_back_f = min(put_back_f, cost + heuristic)
+            if put_back:
+                current.f = put_back_f
+                heappush(frontier, current)
+            elif current.state.is_standard:
+                expanded.add(current.state)
         return None
 
     def pretty_print(self, state):
