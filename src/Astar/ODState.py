@@ -42,12 +42,31 @@ class ODState:
 
         self.illegal_size = 0
 
+        # This cost reflects the cost of the predetermined moves
+        self.construction_cost = 0
+
         # If we have a standard state make the predetermined/illegal moves,
         # this way the valid_next method will automatically check for conflicts
         if len(self.new_agents) == 0 and illegal_moves_set is not None and time_step is not None:
             self.new_agents = tuple(Agent(illegal_moves.agent_id, get_illegal(illegal_moves), illegal_moves.color) for illegal_moves in illegal_moves_set)
             self.illegal_size = len(self.new_agents)
-            self.new_accumulated_cost = tuple(0 for _ in range(len(self.new_agents)))
+
+            # Calculate the cost of the predetermined moves
+            acc_costs = []
+            for i, agent in enumerate(self.new_agents):
+                # Agent has moves so cost of 1 + accumulated cost
+                if agent.coords != self.agents[i].coords:
+                    self.construction_cost += 1 + self.accumulated_cost[i]
+                    acc_costs.append(0)
+                else:
+                    # Agent is on goal node so increase the accumulated cost
+                    if illegal_moves_set[i][-1] == agent.coords:
+                        acc_costs.append(1 + self.accumulated_cost[i])
+                    else:
+                        # Agent is waiting on non-goal node, so increase cost by 1 as no accumulated cost can exist
+                        self.construction_cost += 1
+                        acc_costs.append(0)
+            self.new_accumulated_cost = tuple(acc_costs)
 
         assert len(self.new_agents) == len(self.new_accumulated_cost)
         assert len(self.agents) == len(self.accumulated_cost)
@@ -59,7 +78,7 @@ class ODState:
         i = len(self.new_agents)
         return self.agents[i], self.accumulated_cost[i]
 
-    def move_with_agent(self, agent, acc_cost, illegal_moves_set: List[AgentPath], time_step) -> ODState:
+    def move_with_agent(self, agent, acc_cost, illegal_moves_set: List[AgentPath], time_step) -> Tuple[ODState, int]:
         """
         Makes the agent the next intermediary agent with associated acc cost.
         Should be used together with the data retrieved from get_next()
@@ -68,7 +87,8 @@ class ODState:
         new_agents.append(agent)
         new_acc_cost = list(self.new_accumulated_cost)
         new_acc_cost.append(acc_cost)
-        return ODState(self.agents, new_agents, self.accumulated_cost, new_acc_cost, illegal_moves_set=illegal_moves_set, time_step=time_step)
+        state = ODState(self.agents, new_agents, self.accumulated_cost, new_acc_cost, illegal_moves_set=illegal_moves_set, time_step=time_step)
+        return state, state.construction_cost
 
     def valid_next(self, new_agent: Agent) -> bool:
         for i, agent in enumerate(self.new_agents):
