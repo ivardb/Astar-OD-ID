@@ -54,17 +54,20 @@ class ODProblem:
                 continue
             if not parent.valid_next(new_agent):
                 continue
-            res.append((parent.move_with_agent(new_agent, 0, self.illegal_moves, current_time), acc + 1, self.cat.get_cat(self.agent_ids, new_agent.coords)))
+            state, additional_cost = parent.move_with_agent(new_agent, 0, self.illegal_moves, current_time + 1)
+            res.append((state, acc + 1 + additional_cost, self.cat.get_cat(self.agent_ids, new_agent.coords)))
         # Add standing still as option
         if parent.valid_next(agent):
             if self.grid.on_goal(agent):
-                res.append((parent.move_with_agent(agent, acc + 1, self.illegal_moves, current_time), 0, self.cat.get_cat(self.agent_ids, agent.coords)))
+                state, additional_cost = parent.move_with_agent(agent, acc + 1, self.illegal_moves, current_time + 1)
+                res.append((state, additional_cost, self.cat.get_cat(self.agent_ids, agent.coords)))
             else:
-                res.append((parent.move_with_agent(agent, 0, self.illegal_moves, current_time), 1, self.cat.get_cat(self.agent_ids, agent.coords)))
+                state, additional_cost = parent.move_with_agent(agent, 0, self.illegal_moves, current_time + 1)
+                res.append((state, 1 + additional_cost, self.cat.get_cat(self.agent_ids, agent.coords)))
         return res
 
-    def initial_state(self) -> ODState:
-        return self.initial
+    def initial_state(self) -> Tuple[ODState, int]:
+        return self.initial, self.initial.construction_cost + len(self.initial.agents)
 
     def is_final(self, state: ODState) -> bool:
         return self.grid.is_final(state.agents)
