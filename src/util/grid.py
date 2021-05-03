@@ -32,10 +32,12 @@ class Grid:
         queue.put((Coord(x, y), 0))
         while not queue.empty():
             coord, dist = queue.get()
+            if coord in visited:
+                continue
             visited.add(coord)
 
             # Already has a better distance
-            if heuristic[coord.y][coord.x] is not None and dist >= heuristic[y][x]:
+            if heuristic[coord.y][coord.x] is not None:
                 continue
             heuristic[coord.y][coord.x] = dist
 
