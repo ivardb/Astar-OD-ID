@@ -23,8 +23,8 @@ def get_version(debug, version) -> str:
 
 
 if __name__ == '__main__':
-    version = "1.0.0"
+    version = "1.1.0"
     debug = True
     api_token = open("../apitoken.txt", "r").read().strip()
-    benchmarker = MapfBenchmarker(api_token, 6, "A* + OD + ID", get_version(debug, version), debug, solver=solve, cores=1)
+    benchmarker = MapfBenchmarker(api_token, 11, "A* + OD + ID with heuristic matching", get_version(debug, version), debug, solver=solve, cores=1)
     benchmarker.run()
