@@ -26,30 +26,17 @@ class IDProblem:
             for i, goal in enumerate(self.grid.goals):
                 if start.color == goal.color:
                     ids.append(i)
-            ids.sort(key=lambda x: self.grid.get_heuristic(Coord(start.x, start.y), x))
+            ids.sort(key=lambda x: self.grid.get_heuristic(Coord(start.x, start.y), start.color))
             goal_ids.append(ids)
         self.assigned_goals = filter(lambda x: len(x) == len(set(x)), itertools.product(*goal_ids))
 
     def solve(self) -> Optional[Solution]:
-        best = float("inf")
-        best_solution = None
-        for goals in self.assigned_goals:
-            print(f"Trying goal assignment of {goals} with maximum cost of {best}")
-            solution = self.solve_matching(goals, best)
-            if solution is not None:
-                cost = sum(map(lambda x: get_cost(x), solution))
-                if cost < best:
-                    best = cost
-                    best_solution = solution
-        return AgentPath.to_solution(best_solution)
-
-    def solve_matching(self, assigned_goals, maximum) -> Optional[List[AgentPath]]:
-        paths = PathSet(self.grid, assigned_goals, len(self.grid.goals))
+        paths = PathSet(self.grid, len(self.grid.goals))
         # Create initial paths for the individual agents. Very quick because of the heuristic used
         self.groups = Groups([Group([n]) for n in range(len(self.grid.starts))])
         for group in self.groups.groups:
-            problem = ODProblem(self.grid, assigned_goals, group, CAT.empty())
-            solver = Solver(problem, max_cost=paths.get_remaining_cost(group.agent_ids, maximum))
+            problem = ODProblem(self.grid, group, CAT.empty())
+            solver = Solver(problem)
             group_paths = solver.solve()
             if group_paths is None:
                 return None
@@ -69,7 +56,7 @@ class IDProblem:
                 avoided_conflicts.add(combo)
 
                 # Try rerunning a while the b moves are not possible
-                problem = ODProblem(self.grid, assigned_goals, a_group, paths.cat,
+                problem = ODProblem(self.grid, a_group, paths.cat,
                                     illegal_moves=[paths[i] for i in b_group.agent_ids])
 
                 # The maximum cost that it can have while still being optimal
@@ -82,7 +69,7 @@ class IDProblem:
                     paths.update(solution)
                 else:
                     # Try redoing b by making a illegal
-                    problem = ODProblem(self.grid, assigned_goals, b_group, paths.cat,
+                    problem = ODProblem(self.grid, b_group, paths.cat,
                                         illegal_moves=[paths[i] for i in a_group.agent_ids])
 
                     # The maximum cost that it can have while still being optimal
@@ -98,8 +85,8 @@ class IDProblem:
             if combine_groups:
                 group = self.groups.combine_agents(a, b)
                 print(f"Combining agents from groups of {a} and {b} into {group.agent_ids}")
-                problem = ODProblem(self.grid, assigned_goals, group, paths.cat)
-                solver = Solver(problem, max_cost=paths.get_remaining_cost(group.agent_ids, maximum))
+                problem = ODProblem(self.grid, group, paths.cat)
+                solver = Solver(problem)
                 group_paths = solver.solve()
                 if group_paths is None:
                     return None
@@ -107,7 +94,7 @@ class IDProblem:
 
             # Find next conflict
             conflict = self.find_conflict(paths.paths)
-        return paths.paths
+        return AgentPath.to_solution(paths.paths)
 
     def find_conflict(self, paths: List[AgentPath]) -> Optional[Tuple[int, int, Group, Group]]:
         for i in range(len(paths)):
@@ -154,9 +141,8 @@ class Groups:
 
 class PathSet:
 
-    def __init__(self, grid: Grid, assigned_goals, n):
+    def __init__(self, grid: Grid, n):
         self.grid = grid
-        self.assigned_goals = tuple(assigned_goals)
         self.paths: List[Optional[AgentPath]] = [None for _ in range(n)]
         self.costs: List[Optional[int]] = [None for _ in range(n)]
         self.cat = CAT(n, grid.w, grid.h)
@@ -180,7 +166,7 @@ class PathSet:
     def get_cost(self, index):
         return self.costs[index] if self.costs[index] is not None else \
             self.grid.get_heuristic(Coord(self.grid.starts[index].x, self.grid.starts[index].y),
-                                    self.assigned_goals[index])
+                                    self.grid.starts[index].color)
 
     def __getitem__(self, item):
         return self.paths[item]

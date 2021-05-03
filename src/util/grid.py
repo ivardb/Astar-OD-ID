@@ -21,21 +21,30 @@ class Grid:
             self.compute_heuristics()
 
     def compute_heuristics(self):
-        self.heuristics = [self.compute_heuristic(goal.x, goal.y) for goal in self.goals]
+        max_color = max(goal.color for goal in self.goals)
+        self.heuristics = [self.compute_heuristic(color) for color in range(max_color + 1)]
 
-    # Calculates the distance to the coordinates for every reachable position
-    def compute_heuristic(self, x, y) -> List[List[Optional[int]]]:
+    def compute_heuristic(self, color) -> List[List[Optional[int]]]:
+        """
+        Calculates the distance to goals of the given color for every reachable position
+        :param color: The color of the goals
+        :return: The distance to these goals
+        """
         queue = Queue()
         visited = set()
         heuristic = [[None for _ in range(self.w)] for _ in range(self.h)]
 
-        queue.put((Coord(x, y), 0))
+        for goal in self.goals:
+            if goal.color == color:
+                queue.put((Coord(goal.x, goal.y), 0))
         while not queue.empty():
             coord, dist = queue.get()
+            if coord in visited:
+                continue
             visited.add(coord)
 
             # Already has a better distance
-            if heuristic[coord.y][coord.x] is not None and dist >= heuristic[y][x]:
+            if heuristic[coord.y][coord.x] is not None:
                 continue
             heuristic[coord.y][coord.x] = dist
 
@@ -52,10 +61,10 @@ class Grid:
                 res.append(new_coord)
         return res
 
-    def get_heuristic(self, coord, goal_index: int) -> Optional[int]:
+    def get_heuristic(self, coord, color: int) -> Optional[int]:
         if self.heuristics is None:
             self.compute_heuristics()
-        return self.heuristics[goal_index][coord.y][coord.x]
+        return self.heuristics[color][coord.y][coord.x]
 
     def is_walkable(self, coord) -> bool:
         return 0 <= coord.x < self.w and 0 <= coord.y < self.h and not self.is_wall(coord)
