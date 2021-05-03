@@ -18,10 +18,11 @@ class Node:
         self.conflicts = conflicts
         self.parent = parent
         self.time_step = time_step
+        self.f = self.cost + self.heuristic
 
     def __lt__(self, other: Node):
-        return ((self.cost + self.heuristic), self.conflicts, self.heuristic) \
-               < ((other.cost + other.heuristic), other.conflicts, other.heuristic)
+        return (self.f, self.conflicts, self.heuristic) \
+               < (other.f, other.conflicts, other.heuristic)
 
 
 def get_path(node: Node) -> List[AgentPath]:
@@ -45,21 +46,21 @@ class Solver:
         self.max_cost = float("inf") if max_cost is None else max_cost
 
     def solve(self) -> Optional[List[AgentPath]]:
-        initial_state = self.problem.initial_state()
+        initial_state, initial_cost = self.problem.initial_state()
         initial_heuristic = self.problem.heuristic(initial_state)
 
-        if initial_heuristic > self.max_cost:
+        if initial_heuristic + initial_cost > self.max_cost:
             return None
 
         expanded = set()
         frontier: List[Node] = []
-        heappush(frontier, Node(0, initial_state, 0, initial_heuristic, 0))
+        heappush(frontier, Node(0, initial_state, initial_cost, initial_heuristic, 0))
         popped = 0
         while frontier:
             popped += 1
             current = heappop(frontier)
             if popped % 100000 == 0:
-                print(f"Count: {popped}, Heuristic: {current.heuristic}, Cost: {current.cost}, F: {current.heuristic + current.cost}, Frontier size: {len(frontier)}")
+                print(f"Count: {popped}, Heuristic: {current.heuristic}, Cost: {current.cost}, F: {current.f}, Frontier size: {len(frontier)}")
             if self.problem.is_final(current.state):
                 return get_path(current)
             if current.standard:
@@ -71,7 +72,7 @@ class Solver:
                 if state not in expanded:
                     cost = current.cost + cost_increase
                     heuristic = self.problem.heuristic(state)
-                    if cost + heuristic < self.max_cost:
+                    if cost + heuristic <= self.max_cost:
                         node = Node(current.time_step + 1, state, cost, heuristic, current.conflicts + conflicts, current)
                         heappush(frontier, node)
         return None
