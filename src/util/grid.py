@@ -80,3 +80,9 @@ class Grid:
             if agent.color == goal.color and agent.coords.x == goal.x and agent.coords.y == goal.y:
                 return True
         return False
+
+    def on_wrong_goal(self, agent):
+        for goal in self.goals:
+            if agent.color != goal.color and agent.coords.x == goal.x and agent.coords.y == goal.y:
+                return True
+        return False

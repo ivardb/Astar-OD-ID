@@ -52,16 +52,18 @@ class ODProblem:
                 continue
             if not parent.valid_next(new_agent):
                 continue
+            collisions = self.cat.get_cat(self.agent_ids, new_agent.coords) + self.grid.on_wrong_goal(new_agent)
             state, additional_cost = parent.move_with_agent(new_agent, 0, self.illegal_moves, current_time + 1)
-            res.append((state, acc + 1 + additional_cost, self.cat.get_cat(self.agent_ids, new_agent.coords)))
+            res.append((state, acc + 1 + additional_cost, collisions))
         # Add standing still as option
         if parent.valid_next(agent):
             if self.grid.on_goal(agent):
                 state, additional_cost = parent.move_with_agent(agent, acc + 1, self.illegal_moves, current_time + 1)
                 res.append((state, additional_cost, self.cat.get_cat(self.agent_ids, agent.coords)))
             else:
+                collisions = self.cat.get_cat(self.agent_ids, agent.coords) + self.grid.on_wrong_goal(agent)
                 state, additional_cost = parent.move_with_agent(agent, 0, self.illegal_moves, current_time + 1)
-                res.append((state, 1 + additional_cost, self.cat.get_cat(self.agent_ids, agent.coords)))
+                res.append((state, 1 + additional_cost, collisions))
         return res
 
     def initial_state(self) -> Tuple[ODState, int]:
