@@ -7,6 +7,8 @@ from src.util.agent import Agent
 
 
 class ODState:
+    __slots__ = ("agents", "new_agents", "accumulated_cost", "new_accumulated_cost", "illegal_size", "construction_cost")
+
     def __init__(self, agents: Iterator[Agent], new_agents: Optional[Iterator[Agent]] = None,
                  accumulated_cost: Optional[Iterator[int]] = None, new_accumulated_cost: Optional[Iterator[int]] = None,
                  illegal_moves_set: Optional[List[AgentPath]] = None, time_step: Optional[int] = None):
