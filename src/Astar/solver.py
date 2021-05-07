@@ -10,7 +10,7 @@ from src.util.coord import Coord
 
 
 class Node:
-    __slots__ = ("state", "cost", "heuristic", "conflicts", "parent", "time_step")
+    __slots__ = ("state", "cost", "heuristic", "conflicts", "time_step")
 
     def __init__(self, time_step: int, state: ODState, cost, heuristic, conflicts: int):
         self.state = state

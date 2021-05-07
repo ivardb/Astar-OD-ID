@@ -11,14 +11,14 @@ from src.util.group import Group
 
 class ODProblem:
 
-    def __init__(self, grid: Grid, assigned_goals, group: Group, cat: CAT, illegal_moves: List[AgentPath] = None):
+    def __init__(self, grid: Grid, group: Group, cat: CAT, illegal_moves: List[AgentPath] = None, assigned_goals=None):
         """
         Creates a problem to be solved by the A*+OD solver
         :param grid: The grid with walls as well as the starting positions and end positions
-        :param assigned_goals: The goals for each agent
         :param group: The group of agents to solve
         :param cat: The CAT table to tiebreak on amount of conflicts caused
         :param illegal_moves: Predetermined paths
+        :param assigned_goals: The goals for each agent
         """
         self.grid = grid
         self.agent_ids = group.agent_ids
@@ -74,8 +74,14 @@ class ODProblem:
 
     def heuristic(self, state: ODState) -> int:
         h = 0
-        for agent in state.new_agents:
-            h += self.grid.get_heuristic(agent.coords, self.assigned_goals[agent.id])
-        for j in range(len(state.new_agents), len(state.agents)):
-            h += self.grid.get_heuristic(state.agents[j].coords, self.assigned_goals[state.agents[j].id])
+        if self.assigned_goals is None:
+            for agent in state.new_agents:
+                h += self.grid.get_heuristic(agent.coords, agent.color)
+            for j in range(len(state.new_agents), len(state.agents)):
+                h += self.grid.get_heuristic(state.agents[j].coords, state.agents[j].color)
+        else:
+            for agent in state.new_agents:
+                h += self.grid.get_heuristic(agent.coords, self.assigned_goals[agent.id])
+            for j in range(len(state.new_agents), len(state.agents)):
+                h += self.grid.get_heuristic(state.agents[j].coords, self.assigned_goals[state.agents[j].id])
         return h
