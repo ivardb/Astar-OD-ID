@@ -4,6 +4,7 @@ from src.util.coord import Coord
 
 
 class Agent:
+    __slots__ = ("id", "coords", "color")
 
     def __init__(self, number, coord: Coord, color: int):
         self.id = number

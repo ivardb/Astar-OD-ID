@@ -2,6 +2,7 @@ from typing import Iterator
 
 
 class Group:
+    __slots__ = "agent_ids"
 
     def __init__(self, agent_ids: Iterator[int]):
         self.agent_ids = tuple(agent_ids)

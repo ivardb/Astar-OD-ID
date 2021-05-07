@@ -4,39 +4,24 @@ from heapq import heappush, heappop
 from typing import List, Optional
 
 from src.Astar.ODProblem import ODProblem
+from src.Astar.ODState import ODState
 from src.util.AgentPath import AgentPath
 from src.util.coord import Coord
 
 
 class Node:
+    __slots__ = ("state", "cost", "heuristic", "conflicts", "time_step")
 
-    def __init__(self, time_step: int, state, cost, heuristic, conflicts: int, parent=None):
+    def __init__(self, time_step: int, state: ODState, cost, heuristic, conflicts: int):
         self.state = state
-        self.standard = state.is_standard()
         self.cost = cost
         self.heuristic = heuristic
         self.conflicts = conflicts
-        self.parent = parent
         self.time_step = time_step
-        self.f = self.cost + self.heuristic
 
     def __lt__(self, other: Node):
-        return (self.f, self.conflicts, self.heuristic) \
-               < (other.f, other.conflicts, other.heuristic)
-
-
-def get_path(node: Node) -> List[AgentPath]:
-    curr = node
-    state_path = []
-    while curr is not None:
-        if curr.standard:
-            state_path.insert(0, curr.state)
-        curr = curr.parent
-    paths = [[] for _ in state_path[0].agents]
-    for path in state_path:
-        for index, agent in enumerate(path.agents):
-            paths[index].append(agent.coords)
-    return [AgentPath(agent.id, agent.color, path) for path, agent in zip(paths, state_path[0].agents)]
+        return (self.cost + self.heuristic, self.conflicts, self.heuristic) \
+               < (other.cost + other.heuristic, other.conflicts, other.heuristic)
 
 
 class Solver:
@@ -44,6 +29,7 @@ class Solver:
     def __init__(self, problem: ODProblem, max_cost=None):
         self.problem = problem
         self.max_cost = float("inf") if max_cost is None else max_cost
+        self.parents = dict()
 
     def solve(self) -> Optional[List[AgentPath]]:
         initial_state, initial_cost = self.problem.initial_state()
@@ -60,10 +46,10 @@ class Solver:
             popped += 1
             current = heappop(frontier)
             if popped % 100000 == 0:
-                print(f"Count: {popped}, Heuristic: {current.heuristic}, Cost: {current.cost}, F: {current.f}, Frontier size: {len(frontier)}")
+                print(f"Count: {popped}, Heuristic: {current.heuristic}, Cost: {current.cost}, F: {current.cost + current.heuristic}, Frontier size: {len(frontier)}")
             if self.problem.is_final(current.state):
-                return get_path(current)
-            if current.standard:
+                return self.get_path(current)
+            if current.state.is_standard():
                 if current.state in expanded:
                     continue
                 expanded.add(current.state)
@@ -73,9 +59,23 @@ class Solver:
                     cost = current.cost + cost_increase
                     heuristic = self.problem.heuristic(state)
                     if cost + heuristic <= self.max_cost:
-                        node = Node(current.time_step + 1, state, cost, heuristic, current.conflicts + conflicts, current)
+                        node = Node(current.time_step + 1, state, cost, heuristic, current.conflicts + conflicts)
+                        self.parents[node] = current
                         heappush(frontier, node)
         return None
+
+    def get_path(self, node: Node) -> List[AgentPath]:
+        curr = node
+        state_path = []
+        while curr is not None:
+            if curr.state.is_standard():
+                state_path.insert(0, curr.state)
+            curr = self.parents.get(curr)
+        paths = [[] for _ in state_path[0].agents]
+        for path in state_path:
+            for index, agent in enumerate(path.agents):
+                paths[index].append(agent.coords)
+        return [AgentPath(agent.id, agent.color, path) for path, agent in zip(paths, state_path[0].agents)]
 
     def pretty_print(self, state):
         grid = self.problem.grid
