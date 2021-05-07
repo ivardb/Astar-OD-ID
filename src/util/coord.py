@@ -9,7 +9,8 @@ class Coord:
         return Coord(self.x + dx, self.y + dy)
 
     def __hash__(self) -> int:
-        return tuple.__hash__((self.x, self.y))
+        return self.x << 16 | self.y
+        #return tuple.__hash__((self.x, self.y))
 
     def __eq__(self, other):
         return (self.x, self.y) == (other.x, other.y)

@@ -18,4 +18,5 @@ class Agent:
         return self.id == other.id and self.coords == other.coords and self.color == other.color
 
     def __hash__(self):
-        return tuple.__hash__((self.id, self.coords, self.color))
+        #return tuple.__hash__((self.id, self.coords))
+        return self.id << 32 | hash(self.coords)
