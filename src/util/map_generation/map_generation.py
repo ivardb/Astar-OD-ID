@@ -15,8 +15,8 @@ from src.util.coord import Coord
 
 class MapGenerator:
 
-    def __init__(self, maps_path):
-        self.maps_path = maps_path
+    def __init__(self, map_root):
+        self.map_root = map_root
 
     @staticmethod
     def map_printer(grid: List[List[int]]):
@@ -85,7 +85,7 @@ class MapGenerator:
         min_team_count = int(agents/teams)
         diff = agents - (min_team_count * teams)
         num_agents = [min_team_count for _ in range(teams)]
-        os.mkdir(os.path.join(self.maps_path, package_name))
+        os.mkdir(os.path.join(self.map_root, package_name))
         for i in range(diff):
             num_agents[i] += 1
         for i in range(amount):
@@ -210,7 +210,7 @@ class MapGenerator:
         return grid
 
     def __store_map(self, name: str, problem: Problem):
-        file_path = os.path.join(self.maps_path, name + ".map")
+        file_path = os.path.join(self.map_root, name + ".map")
         with open(file_path, 'w') as f:
             f.write(f'width {problem.width}\n')
             f.write(f'height {problem.height}\n')
@@ -232,4 +232,4 @@ class MapGenerator:
 
 if __name__ == '__main__':
     map_generator = MapGenerator("../../../maps")
-    map_generator.generate_even_batch(20, "test2", "test", 2, 4, 10, 10)
+    map_generator.generate_even_batch(10, "test2", "test", 2, 4, 10, 10)
