@@ -57,7 +57,7 @@ if __name__ == "__main__":
     map_root = "../../../maps"
     runner = MapRunner(map_root, HeuristicType.Exhaustive)
     for folder in (name for name in os.listdir(map_root) if os.path.isdir(os.path.join(map_root, name))):
-        with open("results.txt", "a") as f:
+        with open("exhaustive_results.txt", "a") as f:
             res = runner.test_generated(30, folder)
             f.write(f"{folder}: {res}\n")
             print(res)
