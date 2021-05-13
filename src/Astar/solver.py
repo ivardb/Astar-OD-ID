@@ -10,14 +10,15 @@ from src.util.coord import Coord
 
 
 class Node:
-    __slots__ = ("state", "cost", "heuristic", "conflicts", "time_step")
+    __slots__ = ("state", "cost", "heuristic", "conflicts", "time_step", "parent")
 
-    def __init__(self, time_step: int, state: ODState, cost, heuristic, conflicts: int):
+    def __init__(self, time_step: int, state: ODState, cost, heuristic, conflicts: int, parent=None):
         self.state = state
         self.cost = cost
         self.heuristic = heuristic
         self.conflicts = conflicts
         self.time_step = time_step
+        self.parent = parent
 
     def __lt__(self, other: Node):
         return (self.cost + self.heuristic, self.conflicts, self.heuristic) \
@@ -29,7 +30,6 @@ class Solver:
     def __init__(self, problem: ODProblem, max_cost=None):
         self.problem = problem
         self.max_cost = float("inf") if max_cost is None else max_cost
-        self.parents = dict()
 
     def solve(self) -> Optional[List[AgentPath]]:
         initial_state, initial_cost = self.problem.initial_state()
@@ -46,7 +46,7 @@ class Solver:
             popped += 1
             current = heappop(frontier)
             if popped % 100000 == 0:
-                print(f"Count: {popped}, Heuristic: {current.heuristic}, Cost: {current.cost}, F: {current.cost + current.heuristic}, Frontier size: {len(frontier)}")
+                print(f"Count: {popped}, Heuristic: {current.heuristic}, Cost: {current.cost}, F: {current.cost + current.heuristic}, Frontier size: {len(frontier)}, Max: {self.max_cost}")
             if self.problem.is_final(current.state):
                 return self.get_path(current)
             if current.state.is_standard():
@@ -59,8 +59,7 @@ class Solver:
                     cost = current.cost + cost_increase
                     heuristic = self.problem.heuristic(state)
                     if cost + heuristic <= self.max_cost:
-                        node = Node(current.time_step + 1, state, cost, heuristic, current.conflicts + conflicts)
-                        self.parents[node] = current
+                        node = Node(current.time_step + 1, state, cost, heuristic, current.conflicts + conflicts, current)
                         heappush(frontier, node)
         return None
 
@@ -70,7 +69,7 @@ class Solver:
         while curr is not None:
             if curr.state.is_standard():
                 state_path.insert(0, curr.state)
-            curr = self.parents.get(curr)
+            curr = curr.parent
         paths = [[] for _ in state_path[0].agents]
         for path in state_path:
             for index, agent in enumerate(path.agents):

@@ -1,12 +1,9 @@
 import os
-
-import itertools
 import random
-from copy import deepcopy
 from numbers import Number
 from queue import Queue
-from typing import List, Tuple, Optional
 from random import randint, uniform
+from typing import List, Tuple
 
 from mapfmclient import Problem, MarkedLocation
 

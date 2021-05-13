@@ -1,4 +1,4 @@
-from copy import copy, deepcopy
+from copy import deepcopy
 
 import matplotlib
 from mapfmclient import Solution
