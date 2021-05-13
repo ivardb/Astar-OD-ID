@@ -72,13 +72,11 @@ class MapGenerator:
         problem = self.generate_map(width, height, num_agents, open_factor, max_neighbors, min_goal_distance, max_goal_distance)
         self.__store_map(name, problem)
 
-    def generate_even_batch(self, amount: int, package_name: str, file_name: str,
-                            teams: int, agents: int,
-                            width: int, height: int,
-                            open_factor: float = 0.75,
-                            max_neighbors: int = 1,
-                            min_goal_distance: float = 0.5,
-                            max_goal_distance: float = 1):
+    def generate_even_batch(self, amount: int, width: int, height: int, agents: int, teams: int,
+                            package_name: str = None, file_name: str = None, open_factor: float = 0.75,
+                            max_neighbors: int = 1, min_goal_distance: float = 0.5, max_goal_distance: float = 1):
+        package_name = package_name if package_name is not None else f"{width}x{height}-A{agents}_T{teams}"
+        file_name = package_name if file_name is None else file_name
         min_team_count = int(agents/teams)
         diff = agents - (min_team_count * teams)
         num_agents = [min_team_count for _ in range(teams)]
@@ -229,4 +227,8 @@ class MapGenerator:
 
 if __name__ == '__main__':
     map_generator = MapGenerator("../../../maps")
-    map_generator.generate_even_batch(10, "test2", "test", 2, 4, 10, 10)
+    for t in range(1,6):
+        for a in range(1,11):
+            if t > a:
+                continue
+            map_generator.generate_even_batch(50, 20, 20, a, t)
