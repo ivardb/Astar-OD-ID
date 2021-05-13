@@ -26,4 +26,4 @@ def visualize(grid: Grid, solution: Solution):
                 x, y = path.route[-1]
             image[y][x] = grid.starts[i].color + 2
         plt.imshow(image)
-        plt.pause(.1)
+        plt.pause(.3)
