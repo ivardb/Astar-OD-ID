@@ -227,8 +227,4 @@ class MapGenerator:
 
 if __name__ == '__main__':
     map_generator = MapGenerator("../../../maps")
-    for t in range(1,6):
-        for a in range(1,11):
-            if t > a:
-                continue
-            map_generator.generate_even_batch(50, 20, 20, a, t)
+    map_generator.generate_even_batch(10, 10, 10, 4, 2, package_name="test")

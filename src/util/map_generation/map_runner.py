@@ -9,6 +9,28 @@ from src.util.grid import HeuristicType
 from src.util.map_generation.map_parser import MapParser
 
 
+class BenchmarkQueue:
+
+    def __init__(self, name):
+        self.name = name
+        with open(name, 'a'):
+            pass
+
+    def get_next(self):
+        with open(self.name, 'r') as f:
+            return f.readline().strip()
+
+    def completed(self):
+        with open(self.name, 'r') as fin:
+            data = fin.read().splitlines(True)
+        with open(self.name, 'w') as fout:
+            fout.writelines(data[1:])
+
+    def add(self, data):
+        with open(self.name, 'a') as f:
+            f.write(data + "\n")
+
+
 class MapRunner:
 
     def __init__(self, map_root, heuristic_type):
@@ -52,12 +74,19 @@ class MapRunner:
                 print("Failed")
         return solved/run
 
+    def test_queue(self, time, queue: BenchmarkQueue, output):
+        task = queue.get_next()
+        while task is not None and task != "":
+            with open(output, 'a') as f:
+                res = self.test_generated(time, task)
+                f.write(f"{task}: {res}\n")
+                print(f"{task}: {res}\n")
+                queue.completed()
+                task = queue.get_next()
+
 
 if __name__ == "__main__":
     map_root = "../../../maps"
+    queue = BenchmarkQueue("queue.txt")
     runner = MapRunner(map_root, HeuristicType.Exhaustive)
-    for folder in (name for name in os.listdir(map_root) if os.path.isdir(os.path.join(map_root, name))):
-        with open("exhaustive_results.txt", "a") as f:
-            res = runner.test_generated(30, folder)
-            f.write(f"{folder}: {res}\n")
-            print(res)
+    runner.test_queue(10, queue, "results.txt")
