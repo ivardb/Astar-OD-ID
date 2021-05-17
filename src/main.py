@@ -31,11 +31,11 @@ def get_name() -> str:
 
 
 if __name__ == '__main__':
-    version = "1.3.0"
+    version = "1.4.0"
     debug = True
     heuristic_type = HeuristicType.Exhaustive
     api_token = open("../apitoken.txt", "r").read().strip()
-    prog = progressive_descriptor=ProgressiveDescriptor(
+    progressive_descriptor = ProgressiveDescriptor(
         min_agents=20,
         max_agents=20,
         num_teams=10)

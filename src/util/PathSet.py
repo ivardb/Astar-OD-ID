@@ -1,4 +1,4 @@
-from typing import List, Optional, Iterator
+from typing import List, Optional, Iterator, Tuple
 
 from src.util.AgentPath import AgentPath
 from src.util.CAT import CAT
@@ -36,9 +36,7 @@ class PathSet:
         return max_cost - sum(self.get_cost(i) for i in self.agent_ids if i not in indexes)
 
     def get_cost(self, agent_id):
-        return self.costs[self.mapping[agent_id]] if self.costs[
-                                                         self.mapping[agent_id]] is not None else self.get_heuristic(
-            agent_id)
+        return self.costs[self.mapping[agent_id]] if self.costs[self.mapping[agent_id]] is not None else self.get_heuristic(agent_id)
 
     def get_heuristic(self, agent_id):
         coord = Coord(self.grid.starts[agent_id].x, self.grid.starts[agent_id].y)
@@ -47,26 +45,20 @@ class PathSet:
         else:
             return self.grid.get_heuristic(coord, self.grid.starts[agent_id].color)
 
+    def find_conflict(self) -> Optional[Tuple[int, int]]:
+        """
+        Find conflicting paths
+        :return: ids of conflicting paths
+        """
+        for i in range(len(self.agent_ids)):
+            id_i = self.agent_ids[i]
+            path_index_i = self.mapping[id_i]
+            for j in range(i + 1, len(self.agent_ids)):
+                id_j = self.agent_ids[j]
+                path_index_j = self.mapping[id_j]
+                if self.paths[path_index_i].conflicts(self.paths[path_index_j]):
+                    return id_i, id_j
+        return None
+
     def __getitem__(self, item):
-        return self.paths[item]
-
-
-class Groups:
-
-    def __init__(self, groups):
-        self.groups = groups
-        self.group_map = dict()
-        for group in groups:
-            for agent in group.agent_ids:
-                self.group_map[agent] = group
-
-    def combine_agents(self, a, b):
-        group_a = self.group_map[a]
-        group_b = self.group_map[b]
-        group = group_a.combine(group_b)
-        self.groups.remove(group_a)
-        self.groups.remove(group_b)
-        self.groups.append(group)
-        for agent in group.agent_ids:
-            self.group_map[agent] = group
-        return group
+        return self.paths[self.mapping[item]]

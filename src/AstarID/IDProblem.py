@@ -7,7 +7,8 @@ from src.Astar.ODProblem import ODProblem
 from src.Astar.solver import Solver
 from src.util.AgentPath import AgentPath
 from src.util.CAT import CAT
-from src.util.PathSet import PathSet, Groups
+from src.util.PathSet import PathSet
+from src.util.Groups import Groups
 from src.util.coord import Coord
 from src.util.grid import Grid, HeuristicType
 from src.util.group import Group
@@ -34,7 +35,7 @@ class IDProblem:
                 goal_ids.append(ids)
             self.assigned_goals = filter(lambda x: len(x) == len(set(x)), itertools.product(*goal_ids))
 
-    def solve(self) -> Optional[Solution]:
+    def solve(self) -> Optional[List[AgentPath]]:
         if self.heuristic_type == HeuristicType.Exhaustive:
             best = float("inf")
             best_solution = None
@@ -46,13 +47,13 @@ class IDProblem:
                     if cost < best:
                         best = cost
                         best_solution = solution
-            return AgentPath.to_solution(best_solution)
+            return best_solution
         else:
             solution = self.solve_matching()
             if solution is None:
                 return None
             else:
-                return AgentPath.to_solution(solution)
+                return solution
 
     def solve_matching(self, maximum=float("inf"), assigned_goals: dict = None) -> Optional[List[AgentPath]]:
         paths = PathSet(self.grid, self.agent_ids, self.heuristic_type, assigned_goals=assigned_goals)
@@ -69,10 +70,12 @@ class IDProblem:
 
         # Start looking for conflicts
         avoided_conflicts = set()
-        conflict = self.find_conflict(paths.paths)
+        conflict = paths.find_conflict()
         while conflict is not None:
             combine_groups = True
-            a, b, a_group, b_group = conflict
+            a, b = conflict
+            a_group = self.groups.group_map[a]
+            b_group = self.groups.group_map[b]
 
             # Check if the conflict has been solved before. If so it has clearly failed
             combo = (a_group.agent_ids, b_group.agent_ids)
@@ -118,12 +121,5 @@ class IDProblem:
                 paths.update(group_paths)
 
             # Find next conflict
-            conflict = self.find_conflict(paths.paths)
+            conflict = paths.find_conflict()
         return paths.paths
-
-    def find_conflict(self, paths: List[AgentPath]) -> Optional[Tuple[int, int, Group, Group]]:
-        for i in range(len(paths)):
-            for j in range(i + 1, len(paths)):
-                if paths[i].conflicts(paths[j]):
-                    return i, j, self.groups.group_map[i], self.groups.group_map[j]
-        return None
