@@ -24,8 +24,9 @@ class MatchingID:
 
     def solve(self) -> Optional[Solution]:
         path_set = GroupPathSet(len(self.grid.starts), self.teams)
-        for team in self.teams:
-            id_problem = IDProblem(self.grid, self.heuristic_type, team)
+        for group in path_set.groups.groups:
+            print(f"MatchingID: Solving agents: {group.agent_ids}")
+            id_problem = IDProblem(self.grid, self.heuristic_type, group)
             paths = id_problem.solve()
             if paths is None:
                 return None
@@ -34,6 +35,7 @@ class MatchingID:
         while conflict is not None:
             a, b = conflict
             new_group = path_set.groups.combine_agents(a, b)
+            print(f"MatchingID: Solving agents: {new_group.agent_ids}")
             id_problem = IDProblem(self.grid, self.heuristic_type, new_group)
             paths = id_problem.solve()
             if paths is None:
@@ -46,8 +48,8 @@ class MatchingID:
 class GroupPathSet:
 
     def __init__(self, n, teams: List[Group]):
-        self.teams = teams
-        self.groups = Groups(deepcopy(teams))
+        self.groups = Groups(teams)
+        self.remove_one_groups()
         self.paths: List[Optional[AgentPath]] = [None for _ in range(n)]
         self.costs: List[Optional[int]] = [None for _ in range(n)]
 
@@ -62,3 +64,11 @@ class GroupPathSet:
                 if self.paths[i].conflicts(self.paths[j]):
                     return i, j
         return None
+
+    def remove_one_groups(self):
+        one_group_agents = list()
+        for group in self.groups.groups:
+            if len(group.agent_ids) == 1:
+                one_group_agents.append(group.agent_ids[0])
+        for i in range(1, len(one_group_agents)):
+            self.groups.combine_agents(one_group_agents[0], one_group_agents[i])
