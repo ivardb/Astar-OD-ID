@@ -1,14 +1,13 @@
-from typing import Optional, List, Tuple
+from typing import Optional, List
 
 import itertools
-from mapfmclient.solution import Solution
 
 from src.Astar.ODProblem import ODProblem
 from src.Astar.solver import Solver
 from src.util.AgentPath import AgentPath
 from src.util.CAT import CAT
-from src.util.PathSet import PathSet
 from src.util.Groups import Groups
+from src.util.PathSet import PathSet
 from src.util.coord import Coord
 from src.util.grid import Grid, HeuristicType
 from src.util.group import Group
@@ -35,13 +34,13 @@ class IDProblem:
                 goal_ids.append(ids)
             self.assigned_goals = filter(lambda x: len(x) == len(set(x)), itertools.product(*goal_ids))
 
-    def solve(self) -> Optional[List[AgentPath]]:
+    def solve(self, cat=None) -> Optional[List[AgentPath]]:
         if self.heuristic_type == HeuristicType.Exhaustive:
             best = float("inf")
             best_solution = None
             for goals in self.assigned_goals:
                 print(f"IDProblem:  Trying goal assignment of {goals} with maximum cost of {best}")
-                solution = self.solve_matching(best, dict(zip(self.agent_ids, goals)))
+                solution = self.solve_matching(cat, best, dict(zip(self.agent_ids, goals)))
                 if solution is not None:
                     cost = sum(map(lambda x: x.get_cost(), solution))
                     if cost < best:
@@ -49,18 +48,22 @@ class IDProblem:
                         best_solution = solution
             return best_solution
         else:
-            solution = self.solve_matching()
+            solution = self.solve_matching(cat)
             if solution is None:
                 return None
             else:
                 return solution
 
-    def solve_matching(self, maximum=float("inf"), assigned_goals: dict = None) -> Optional[List[AgentPath]]:
+    def solve_matching(self, cat: CAT, maximum=float("inf"), assigned_goals: dict = None) -> Optional[List[AgentPath]]:
         paths = PathSet(self.grid, self.agent_ids, self.heuristic_type, assigned_goals=assigned_goals)
         # Create initial paths for the individual agents. Very quick because of the heuristic used
+        cats = list()
+        if cat is not None:
+            cats.append(cat)
+        cats.append(paths.cat)
         self.groups = Groups([Group([n]) for n in self.agent_ids])
         for group in self.groups.groups:
-            problem = ODProblem(self.grid, group, CAT.empty(), assigned_goals=assigned_goals)
+            problem = ODProblem(self.grid, group, cats, assigned_goals=assigned_goals)
             solver = Solver(problem, max_cost=paths.get_remaining_cost(group.agent_ids, maximum))
             group_paths = solver.solve()
             if group_paths is None:
@@ -83,7 +86,7 @@ class IDProblem:
                 avoided_conflicts.add(combo)
 
                 # Try rerunning a while the b moves are not possible
-                problem = ODProblem(self.grid, a_group, paths.cat,
+                problem = ODProblem(self.grid, a_group, cats,
                                     illegal_moves=[paths[i] for i in b_group.agent_ids], assigned_goals=assigned_goals)
 
                 # The maximum cost that it can have while still being optimal
@@ -96,7 +99,7 @@ class IDProblem:
                     paths.update(solution)
                 else:
                     # Try redoing b by making a illegal
-                    problem = ODProblem(self.grid, b_group, paths.cat,
+                    problem = ODProblem(self.grid, b_group, cats,
                                         illegal_moves=[paths[i] for i in a_group.agent_ids],
                                         assigned_goals=assigned_goals)
 

@@ -9,7 +9,7 @@ from src.util.grid import HeuristicType
 def solve(starting_problem: Problem) -> Solution:
     print()
     problem = MatchingID(starting_problem, heuristic_type)
-    solution = problem.solve()
+    solution = problem.solve(enable_cat=enable_cat)
     if solution is None:
         print("Failed to find solution")
         return None
@@ -34,6 +34,7 @@ if __name__ == '__main__':
     version = "1.4.0"
     debug = True
     heuristic_type = HeuristicType.Exhaustive
+    enable_cat = False # TODO: Test if worth it or not
     api_token = open("../apitoken.txt", "r").read().strip()
     progressive_descriptor = ProgressiveDescriptor(
         min_agents=20,

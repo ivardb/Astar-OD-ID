@@ -1,10 +1,10 @@
-from copy import deepcopy
 from typing import Optional, List, Iterator, Tuple
 
 from mapfmclient import Problem, Solution
 
 from src.AstarID.IDProblem import IDProblem
 from src.util.AgentPath import AgentPath
+from src.util.CAT import CAT
 from src.util.Groups import Groups
 from src.util.grid import HeuristicType, Grid
 from src.util.group import Group
@@ -22,12 +22,13 @@ class MatchingID:
             teams[start.color].append(i)
         self.teams = list(map(Group, filter(lambda x: len(x) > 0, teams)))
 
-    def solve(self) -> Optional[Solution]:
-        path_set = GroupPathSet(len(self.grid.starts), self.teams)
+    def solve(self, enable_cat=True) -> Optional[Solution]:
+        path_set = GroupPathSet(len(self.grid.starts), self.grid.w, self.grid.h, self.teams)
+        cat = path_set.cat if enable_cat else None
         for group in path_set.groups.groups:
             print(f"MatchingID: Solving agents: {group.agent_ids}")
             id_problem = IDProblem(self.grid, self.heuristic_type, group)
-            paths = id_problem.solve()
+            paths = id_problem.solve(cat=cat)
             if paths is None:
                 return None
             path_set.update(paths)
@@ -37,7 +38,7 @@ class MatchingID:
             new_group = path_set.groups.combine_agents(a, b)
             print(f"MatchingID: Solving agents: {new_group.agent_ids}")
             id_problem = IDProblem(self.grid, self.heuristic_type, new_group)
-            paths = id_problem.solve()
+            paths = id_problem.solve(cat=cat)
             if paths is None:
                 return None
             path_set.update(paths)
@@ -47,16 +48,18 @@ class MatchingID:
 
 class GroupPathSet:
 
-    def __init__(self, n, teams: List[Group]):
+    def __init__(self, n, w, h, teams: List[Group]):
         self.groups = Groups(teams)
         self.remove_one_groups()
         self.paths: List[Optional[AgentPath]] = [None for _ in range(n)]
-        self.costs: List[Optional[int]] = [None for _ in range(n)]
+        self.cat = CAT(n, w, h)
 
     def update(self, new_paths: Iterator[AgentPath]):
         for path in new_paths:
-            self.paths[path.agent_id] = path
-            self.costs[path.agent_id] = path.get_cost()
+            i = path.agent_id
+            self.cat.remove_cat(i, self.paths[i])
+            self.paths[i] = path
+            self.cat.add_cat(i, path)
 
     def find_conflict(self) -> Optional[Tuple[int, int]]:
         for i in range(len(self.paths)):

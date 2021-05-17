@@ -11,12 +11,12 @@ from src.util.group import Group
 
 class ODProblem:
 
-    def __init__(self, grid: Grid, group: Group, cat: CAT, illegal_moves: List[AgentPath] = None, assigned_goals: dict = None):
+    def __init__(self, grid: Grid, group: Group, cats: List[CAT], illegal_moves: List[AgentPath] = None, assigned_goals: dict = None):
         """
         Creates a problem to be solved by the A*+OD solver
         :param grid: The grid with walls as well as the starting positions and end positions
         :param group: The group of agents to solve
-        :param cat: The CAT table to tiebreak on amount of conflicts caused
+        :param cats: The CAT table to tiebreak on amount of conflicts caused
         :param illegal_moves: Predetermined paths
         :param assigned_goals: The goals for each agent
         """
@@ -36,7 +36,7 @@ class ODProblem:
         # Create the initial state and add the predetermined moves for the next time_step
         self.initial = ODState(agents, illegal_moves_set=illegal_moves, time_step=0)
         self.illegal_moves = illegal_moves
-        self.cat = cat
+        self.cats = cats
 
     def expand(self, parent: ODState, current_time) -> Iterable[Tuple[ODState, int, int]]:
         """
@@ -55,15 +55,15 @@ class ODProblem:
             if not parent.valid_next(new_agent):
                 continue
             state, additional_cost = parent.move_with_agent(new_agent, 0, self.illegal_moves, current_time + 1)
-            res.append((state, acc + 1 + additional_cost, self.cat.get_cat(self.agent_ids, new_agent.coords)))
+            res.append((state, acc + 1 + additional_cost, self.get_cat(new_agent.coords)))
         # Add standing still as option
         if parent.valid_next(agent):
             if self.grid.on_goal(agent):
                 state, additional_cost = parent.move_with_agent(agent, acc + 1, self.illegal_moves, current_time + 1)
-                res.append((state, additional_cost, self.cat.get_cat(self.agent_ids, agent.coords)))
+                res.append((state, additional_cost, self.get_cat(agent.coords)))
             else:
                 state, additional_cost = parent.move_with_agent(agent, 0, self.illegal_moves, current_time + 1)
-                res.append((state, 1 + additional_cost, self.cat.get_cat(self.agent_ids, agent.coords)))
+                res.append((state, 1 + additional_cost, self.get_cat(agent.coords)))
         return res
 
     def initial_state(self) -> Tuple[ODState, int]:
@@ -85,3 +85,9 @@ class ODProblem:
             for j in range(len(state.new_agents), len(state.agents)):
                 h += self.grid.get_heuristic(state.agents[j].coords, self.assigned_goals[state.agents[j].id])
         return h
+
+    def get_cat(self, coords) -> int:
+        res = 0
+        for cat in self.cats:
+            res += cat.get_cat(self.agent_ids, coords)
+        return res
