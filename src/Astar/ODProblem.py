@@ -11,7 +11,7 @@ from src.util.group import Group
 
 class ODProblem:
 
-    def __init__(self, grid: Grid, group: Group, cat: CAT, illegal_moves: List[AgentPath] = None, assigned_goals=None):
+    def __init__(self, grid: Grid, group: Group, cat: CAT, illegal_moves: List[AgentPath] = None, assigned_goals: dict = None):
         """
         Creates a problem to be solved by the A*+OD solver
         :param grid: The grid with walls as well as the starting positions and end positions

@@ -1,13 +1,13 @@
-from typing import Optional, List, Tuple, Iterator
+from typing import Optional, List, Tuple
 
 import itertools
-from mapfmclient import Problem
 from mapfmclient.solution import Solution
 
 from src.Astar.ODProblem import ODProblem
 from src.Astar.solver import Solver
 from src.util.AgentPath import AgentPath
 from src.util.CAT import CAT
+from src.util.PathSet import PathSet, Groups
 from src.util.coord import Coord
 from src.util.grid import Grid, HeuristicType
 from src.util.group import Group
@@ -15,15 +15,17 @@ from src.util.group import Group
 
 class IDProblem:
 
-    def __init__(self, problem: Problem, heuristic_type: HeuristicType):
-        self.grid = Grid(problem.grid, problem.width, problem.height, problem.starts, problem.goals, heuristic_type)
+    def __init__(self, grid: Grid, heuristic_type: HeuristicType, group: Group):
+        self.grid = grid
         self.groups = None
         self.assigned_goals = None
         self.heuristic_type = heuristic_type
+        self.agent_ids = group.agent_ids
 
         if heuristic_type == HeuristicType.Exhaustive:
             goal_ids = []
-            for start in problem.starts:
+            for agent_id in self.agent_ids:
+                start = self.grid.starts[agent_id]
                 ids = []
                 for i, goal in enumerate(self.grid.goals):
                     if start.color == goal.color:
@@ -38,9 +40,9 @@ class IDProblem:
             best_solution = None
             for goals in self.assigned_goals:
                 print(f"Trying goal assignment of {goals} with maximum cost of {best}")
-                solution = self.solve_matching(best, goals)
+                solution = self.solve_matching(best, dict(zip(self.agent_ids, goals)))
                 if solution is not None:
-                    cost = sum(map(lambda x: get_cost(x), solution))
+                    cost = sum(map(lambda x: x.get_cost(), solution))
                     if cost < best:
                         best = cost
                         best_solution = solution
@@ -52,10 +54,10 @@ class IDProblem:
             else:
                 return AgentPath.to_solution(solution)
 
-    def solve_matching(self, maximum=float("inf"), assigned_goals=None) -> Optional[List[AgentPath]]:
-        paths = PathSet(self.grid, len(self.grid.goals), self.heuristic_type, assigned_goals=assigned_goals)
+    def solve_matching(self, maximum=float("inf"), assigned_goals: dict = None) -> Optional[List[AgentPath]]:
+        paths = PathSet(self.grid, self.agent_ids, self.heuristic_type, assigned_goals=assigned_goals)
         # Create initial paths for the individual agents. Very quick because of the heuristic used
-        self.groups = Groups([Group([n]) for n in range(len(self.grid.starts))])
+        self.groups = Groups([Group([n]) for n in self.agent_ids])
         for group in self.groups.groups:
             problem = ODProblem(self.grid, group, CAT.empty(), assigned_goals=assigned_goals)
             solver = Solver(problem, max_cost=paths.get_remaining_cost(group.agent_ids, maximum))
@@ -82,7 +84,7 @@ class IDProblem:
                                     illegal_moves=[paths[i] for i in b_group.agent_ids], assigned_goals=assigned_goals)
 
                 # The maximum cost that it can have while still being optimal
-                maximum_cost = get_cost(paths[a]) + sum(get_cost(paths[i]) for i in b_group.agent_ids)
+                maximum_cost = paths[a].get_cost() + sum(paths[i].get_cost() for i in b_group.agent_ids)
                 solver = Solver(problem, max_cost=maximum_cost)
                 solution = solver.solve()
                 if solution is not None:
@@ -96,7 +98,7 @@ class IDProblem:
                                         assigned_goals=assigned_goals)
 
                     # The maximum cost that it can have while still being optimal
-                    maximum_cost = get_cost(paths[b]) + sum(get_cost(paths[i]) for i in a_group.agent_ids)
+                    maximum_cost = paths[b].get_cost() + sum(paths[i].get_cost() for i in a_group.agent_ids)
                     solver = Solver(problem, max_cost=maximum_cost)
                     solution = solver.solve()
                     if solution is not None:
@@ -125,79 +127,3 @@ class IDProblem:
                 if paths[i].conflicts(paths[j]):
                     return i, j, self.groups.group_map[i], self.groups.group_map[j]
         return None
-
-
-def get_cost(path: AgentPath):
-    cost = len(path)
-    last = path[-1]
-    i = 2
-    if i > len(path):
-        return cost
-    while path[-i] == last:
-        cost -= 1
-        i += 1
-        if i > len(path):
-            break
-    return cost
-
-
-class Groups:
-
-    def __init__(self, groups):
-        self.groups = groups
-        self.group_map = dict()
-        for group in groups:
-            for agent in group.agent_ids:
-                self.group_map[agent] = group
-
-    def combine_agents(self, a, b):
-        group_a = self.group_map[a]
-        group_b = self.group_map[b]
-        group = group_a.combine(group_b)
-        self.groups.remove(group_a)
-        self.groups.remove(group_b)
-        self.groups.append(group)
-        for agent in group.agent_ids:
-            self.group_map[agent] = group
-        return group
-
-
-class PathSet:
-
-    def __init__(self, grid: Grid, n, heuristic_type: HeuristicType, assigned_goals=None):
-        self.grid = grid
-        self.heuristic_type = heuristic_type
-        if heuristic_type == HeuristicType.Exhaustive:
-            self.assigned_goals = assigned_goals
-        self.paths: List[Optional[AgentPath]] = [None for _ in range(n)]
-        self.costs: List[Optional[int]] = [None for _ in range(n)]
-        self.cat = CAT(n, grid.w, grid.h)
-
-    def update(self, new_paths: Iterator[AgentPath]):
-        for path in new_paths:
-            i = path.agent_id
-            self.cat.remove_cat(i, self.paths[i])
-            self.paths[i] = path
-            self.cat.add_cat(i, path)
-            self.costs[i] = get_cost(path)
-
-    def get_remaining_cost(self, indexes: List[int], max_cost) -> int:
-        """
-        Calculates the remaining cost that can be spent on a set of paths without going over the max cost
-        :param indexes: The paths that still need to be solved
-        :param max_cost: The maximum cost that can't be overridden
-        """
-        return max_cost - sum(self.get_cost(i) for i in range(len(self.costs)) if i not in indexes)
-
-    def get_cost(self, index):
-        return self.costs[index] if self.costs[index] is not None else self.get_heuristic(index)
-
-    def get_heuristic(self, index):
-        coord = Coord(self.grid.starts[index].x, self.grid.starts[index].y)
-        if self.heuristic_type == HeuristicType.Exhaustive:
-            return self.grid.get_heuristic(coord, self.assigned_goals[index])
-        else:
-            return self.grid.get_heuristic(coord, self.grid.starts[index].color)
-
-    def __getitem__(self, item):
-        return self.paths[item]

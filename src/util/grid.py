@@ -9,7 +9,7 @@ from src.util.coord import Coord
 
 
 class HeuristicType(Enum):
-    Color = 1
+    Heuristic = 1
     Exhaustive = 2
 
 
@@ -28,7 +28,7 @@ class Grid:
     def compute_heuristics(self, heuristic_type):
         if heuristic_type == HeuristicType.Exhaustive:
             self.heuristics = [self.compute_goal_heuristic(goal.x, goal.y) for goal in self.goals]
-        elif heuristic_type == HeuristicType.Color:
+        elif heuristic_type == HeuristicType.Heuristic:
             max_color = max(goal.color for goal in self.goals)
             self.heuristics = [self.compute_color_heuristic(color) for color in range(max_color + 1)]
 

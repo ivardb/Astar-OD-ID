@@ -1,17 +1,14 @@
 import subprocess
-from typing import Optional
 
-from func_timeout import func_timeout, FunctionTimedOut
 from mapfmclient import Problem, Solution, MapfBenchmarker, BenchmarkDescriptor, ProgressiveDescriptor
 
-from src.AstarID.IDProblem import IDProblem
+from src.AstarID.MatchingID import MatchingID
 from src.util.grid import HeuristicType
-from src.util.visualization.visualizer import visualize
 
 
 def solve(starting_problem: Problem) -> Solution:
     print()
-    problem = IDProblem(starting_problem, heuristic_type)
+    problem = MatchingID(starting_problem, heuristic_type)
     solution = problem.solve()
     if solution is None:
         print("Failed to find solution")
@@ -36,12 +33,12 @@ def get_name() -> str:
 if __name__ == '__main__':
     version = "1.3.0"
     debug = True
-    heuristic_type = HeuristicType.Color
+    heuristic_type = HeuristicType.Exhaustive
     api_token = open("../apitoken.txt", "r").read().strip()
     prog = progressive_descriptor=ProgressiveDescriptor(
         min_agents=20,
         max_agents=20,
         num_teams=10)
-    benchmarker = MapfBenchmarker(api_token, BenchmarkDescriptor(22),
+    benchmarker = MapfBenchmarker(api_token, BenchmarkDescriptor(1, progressive_descriptor),
                                   get_name(), get_version(), debug, solver=solve, cores=1)
     benchmarker.run()

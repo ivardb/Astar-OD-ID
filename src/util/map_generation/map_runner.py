@@ -1,4 +1,3 @@
-import os
 from typing import Optional
 
 from func_timeout import func_timeout, FunctionTimedOut
