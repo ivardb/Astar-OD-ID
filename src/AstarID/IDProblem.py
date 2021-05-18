@@ -11,6 +11,9 @@ from src.util.PathSet import PathSet
 from src.util.coord import Coord
 from src.util.grid import Grid, HeuristicType
 from src.util.group import Group
+from src.util.logger.logger import Logger
+
+logger = Logger("IDProblem")
 
 
 class IDProblem:
@@ -39,7 +42,7 @@ class IDProblem:
             best = float("inf")
             best_solution = None
             for goals in self.assigned_goals:
-                print(f"IDProblem:  Trying goal assignment of {goals} with maximum cost of {best}")
+                logger.log(f"Trying goal assignment of {goals} with maximum cost of {best}")
                 solution = self.solve_matching(cat, best, dict(zip(self.agent_ids, goals)))
                 if solution is not None:
                     cost = sum(map(lambda x: x.get_cost(), solution))
@@ -115,8 +118,8 @@ class IDProblem:
             # Combine groups
             if combine_groups:
                 group = self.groups.combine_agents(a, b)
-                print(f"IDProblem:  Combining agents from groups of {a} and {b} into {group.agent_ids}")
-                problem = ODProblem(self.grid, group, paths.cat, assigned_goals=assigned_goals)
+                logger.log(f"Combining agents from groups of {a} and {b} into {group.agent_ids}")
+                problem = ODProblem(self.grid, group, cats, assigned_goals=assigned_goals)
                 solver = Solver(problem, max_cost=paths.get_remaining_cost(group.agent_ids, maximum))
                 group_paths = solver.solve()
                 if group_paths is None:

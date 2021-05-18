@@ -3,7 +3,7 @@ from typing import Optional
 from func_timeout import func_timeout, FunctionTimedOut
 from mapfmclient import Problem, Solution
 
-from src.AstarID.IDProblem import IDProblem
+from src.AstarID.MatchingID import MatchingID
 from src.util.grid import HeuristicType
 from src.util.map_generation.map_parser import MapParser
 
@@ -49,8 +49,7 @@ class MapRunner:
         return sol
 
     def solve(self, starting_problem: Problem) -> Solution:
-        print()
-        problem = IDProblem(starting_problem, self.heuristic_type)
+        problem = MatchingID(starting_problem, self.heuristic_type)
         solution = problem.solve()
         if solution is None:
             print("Failed to find solution")
@@ -63,7 +62,7 @@ class MapRunner:
         run = 0
 
         for i, problem in enumerate(problems):
-            print(f"Testing: {folder} Run: {i + 1}/{len(problems)}, Solved: {solved}/{run}")
+            print(f"Testing: {folder} Run: {i + 1}/{len(problems)}, Solved: {solved}/{run}", end='   ')
             solution = self.timeout(problem, time)
             run += 1
             if solution is not None:

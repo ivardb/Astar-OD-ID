@@ -8,7 +8,9 @@ from src.util.CAT import CAT
 from src.util.Groups import Groups
 from src.util.grid import HeuristicType, Grid
 from src.util.group import Group
+from src.util.logger.logger import Logger
 
+logger = Logger("MatchingID")
 
 class MatchingID:
 
@@ -25,7 +27,7 @@ class MatchingID:
     def solve(self, enable_cat=True) -> Optional[Solution]:
         path_set = GroupPathSet(len(self.grid.starts), self.grid.w, self.grid.h, self.teams, enable_cat)
         for group in path_set.groups.groups:
-            print(f"MatchingID: Solving agents: {group.agent_ids}")
+            logger.log(f"Solving agents: {group.agent_ids}")
             id_problem = IDProblem(self.grid, self.heuristic_type, group)
             paths = id_problem.solve(cat=path_set.cat)
             if paths is None:
@@ -35,7 +37,7 @@ class MatchingID:
         while conflict is not None:
             a, b = conflict
             new_group = path_set.groups.combine_agents(a, b)
-            print(f"MatchingID: Solving agents: {new_group.agent_ids}")
+            logger.log(f"Solving agents: {new_group.agent_ids}")
             id_problem = IDProblem(self.grid, self.heuristic_type, new_group)
             paths = id_problem.solve(cat=path_set.cat)
             if paths is None:
