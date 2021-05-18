@@ -23,12 +23,11 @@ class MatchingID:
         self.teams = list(map(Group, filter(lambda x: len(x) > 0, teams)))
 
     def solve(self, enable_cat=True) -> Optional[Solution]:
-        path_set = GroupPathSet(len(self.grid.starts), self.grid.w, self.grid.h, self.teams)
-        cat = path_set.cat if enable_cat else None
+        path_set = GroupPathSet(len(self.grid.starts), self.grid.w, self.grid.h, self.teams, enable_cat)
         for group in path_set.groups.groups:
             print(f"MatchingID: Solving agents: {group.agent_ids}")
             id_problem = IDProblem(self.grid, self.heuristic_type, group)
-            paths = id_problem.solve(cat=cat)
+            paths = id_problem.solve(cat=path_set.cat)
             if paths is None:
                 return None
             path_set.update(paths)
@@ -38,7 +37,7 @@ class MatchingID:
             new_group = path_set.groups.combine_agents(a, b)
             print(f"MatchingID: Solving agents: {new_group.agent_ids}")
             id_problem = IDProblem(self.grid, self.heuristic_type, new_group)
-            paths = id_problem.solve(cat=cat)
+            paths = id_problem.solve(cat=path_set.cat)
             if paths is None:
                 return None
             path_set.update(paths)
@@ -48,11 +47,11 @@ class MatchingID:
 
 class GroupPathSet:
 
-    def __init__(self, n, w, h, teams: List[Group]):
+    def __init__(self, n, w, h, teams: List[Group], enable_cat):
         self.groups = Groups(teams)
         self.remove_one_groups()
         self.paths: List[Optional[AgentPath]] = [None for _ in range(n)]
-        self.cat = CAT(n, w, h)
+        self.cat = CAT(n, w, h) if enable_cat else CAT.empty()
 
     def update(self, new_paths: Iterator[AgentPath]):
         for path in new_paths:

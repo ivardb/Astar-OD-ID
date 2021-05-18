@@ -34,7 +34,7 @@ if __name__ == '__main__':
     version = "1.4.0"
     debug = True
     heuristic_type = HeuristicType.Exhaustive
-    enable_cat = False # TODO: Test if worth it or not
+    enable_cat = True
     api_token = open("../apitoken.txt", "r").read().strip()
     progressive_descriptor = ProgressiveDescriptor(
         min_agents=20,

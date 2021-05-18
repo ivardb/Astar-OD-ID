@@ -12,12 +12,16 @@ class CAT:
         self.cat = [[list() for _ in range(w)] for _ in range(h)]
 
     def remove_cat(self, index, path: AgentPath):
+        if not self.active:
+            return
         if path is None:
             return
         for coord in path.coords:
             self.cat[coord.y][coord.x].remove(index)
 
     def add_cat(self, index, path: AgentPath):
+        if not self.active:
+            return
         for coord in path.coords:
             self.cat[coord.y][coord.x].append(index)
 
