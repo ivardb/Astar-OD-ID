@@ -6,11 +6,11 @@ from src.Astar.ODProblem import ODProblem
 from src.Astar.solver import Solver
 from src.util.AgentPath import AgentPath
 from src.util.CAT import CAT
-from src.util.Groups import Groups
 from src.util.PathSet import PathSet
 from src.util.coord import Coord
 from src.util.grid import Grid, HeuristicType
 from src.util.group import Group
+from src.util.groups import Groups
 from src.util.logger.logger import Logger
 
 logger = Logger("IDProblem")
@@ -25,6 +25,7 @@ class IDProblem:
         self.heuristic_type = heuristic_type
         self.agent_ids = group.agent_ids
 
+        # Generate iterator with all possible matchings
         if heuristic_type == HeuristicType.Exhaustive:
             goal_ids = []
             for agent_id in self.agent_ids:
@@ -38,7 +39,9 @@ class IDProblem:
             self.assigned_goals = filter(lambda x: len(x) == len(set(x)), itertools.product(*goal_ids))
 
     def solve(self, cat=None) -> Optional[List[AgentPath]]:
-        if self.heuristic_type == HeuristicType.Exhaustive:
+        if self.heuristic_type == HeuristicType.Heuristic:
+            return self.solve_matching(cat)
+        else:
             best = float("inf")
             best_solution = None
             for goals in self.assigned_goals:
@@ -50,20 +53,16 @@ class IDProblem:
                         best = cost
                         best_solution = solution
             return best_solution
-        else:
-            solution = self.solve_matching(cat)
-            if solution is None:
-                return None
-            else:
-                return solution
 
     def solve_matching(self, cat: CAT, maximum=float("inf"), assigned_goals: dict = None) -> Optional[List[AgentPath]]:
         paths = PathSet(self.grid, self.agent_ids, self.heuristic_type, assigned_goals=assigned_goals)
-        # Create initial paths for the individual agents. Very quick because of the heuristic used
+        # Create list of used Collision Avoidance Tables
         cats = list()
         if cat is not None:
             cats.append(cat)
         cats.append(paths.cat)
+
+        # Create initial agent paths
         self.groups = Groups([Group([n]) for n in self.agent_ids])
         for group in self.groups.groups:
             problem = ODProblem(self.grid, group, cats, assigned_goals=assigned_goals)
@@ -118,7 +117,7 @@ class IDProblem:
             # Combine groups
             if combine_groups:
                 group = self.groups.combine_agents(a, b)
-                logger.log(f"Combining agents from groups of {a} and {b} into {group.agent_ids}")
+                logger.log(f"Combining agents from groups of {a} and {b} into {group}")
                 problem = ODProblem(self.grid, group, cats, assigned_goals=assigned_goals)
                 solver = Solver(problem, max_cost=paths.get_remaining_cost(group.agent_ids, maximum))
                 group_paths = solver.solve()

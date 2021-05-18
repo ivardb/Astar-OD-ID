@@ -5,12 +5,13 @@ from mapfmclient import Problem, Solution
 from src.AstarID.IDProblem import IDProblem
 from src.util.AgentPath import AgentPath
 from src.util.CAT import CAT
-from src.util.Groups import Groups
 from src.util.grid import HeuristicType, Grid
 from src.util.group import Group
+from src.util.groups import Groups
 from src.util.logger.logger import Logger
 
 logger = Logger("MatchingID")
+
 
 class MatchingID:
 
@@ -27,7 +28,7 @@ class MatchingID:
     def solve(self, enable_cat=True) -> Optional[Solution]:
         path_set = GroupPathSet(len(self.grid.starts), self.grid.w, self.grid.h, self.teams, enable_cat)
         for group in path_set.groups.groups:
-            logger.log(f"Solving agents: {group.agent_ids}")
+            logger.log(f"Solving agents: {group}")
             id_problem = IDProblem(self.grid, self.heuristic_type, group)
             paths = id_problem.solve(cat=path_set.cat)
             if paths is None:
@@ -37,7 +38,7 @@ class MatchingID:
         while conflict is not None:
             a, b = conflict
             new_group = path_set.groups.combine_agents(a, b)
-            logger.log(f"Solving agents: {new_group.agent_ids}")
+            logger.log(f"Solving agents: {new_group}")
             id_problem = IDProblem(self.grid, self.heuristic_type, new_group)
             paths = id_problem.solve(cat=path_set.cat)
             if paths is None:
@@ -71,8 +72,8 @@ class GroupPathSet:
 
     def remove_one_groups(self):
         one_group_agents = list()
-        for group in self.groups.groups:
-            if len(group.agent_ids) == 1:
-                one_group_agents.append(group.agent_ids[0])
+        for group in self.groups:
+            if len(group) == 1:
+                one_group_agents.append(group[0])
         for i in range(1, len(one_group_agents)):
             self.groups.combine_agents(one_group_agents[0], one_group_agents[i])

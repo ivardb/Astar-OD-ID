@@ -1,0 +1,23 @@
+With id:
+20x20-A1_T1: Completed: 1.0, Average Time: 0.004s
+20x20-A2_T1: Completed: 1.0, Average Time: 0.078s
+20x20-A2_T2: Completed: 1.0, Average Time: 0.037s
+20x20-A3_T1: Completed: 0.98, Average Time: 1.649s
+20x20-A3_T2: Completed: 0.94, Average Time: 2.054s
+20x20-A3_T3: Completed: 0.94, Average Time: 0.988s
+20x20-A4_T1: Completed: 0.84, Average Time: 1.864s
+20x20-A4_T2: Completed: 0.76, Average Time: 0.551s
+20x20-A4_T3: Completed: 0.62, Average Time: 5.474s
+20x20-A4_T4: Completed: 0.6, Average Time: 6.029s
+
+No id:
+20x20-A1_T1: Completed: 1.0, Average Time: 0.004s
+20x20-A2_T1: Completed: 1.0, Average Time: 0.073s
+20x20-A2_T2: Completed: 1.0, Average Time: 0.031s
+20x20-A3_T1: Completed: 0.98, Average Time: 1.564s
+20x20-A3_T2: Completed: 0.94, Average Time: 2.155s
+20x20-A3_T3: Completed: 0.94, Average Time: 1.102s
+20x20-A4_T1: Completed: 0.84, Average Time: 1.903s
+20x20-A4_T2: Completed: 0.74, Average Time: 1.276s
+20x20-A4_T3: Completed: 0.56, Average Time: 3.864s
+20x20-A4_T4: Completed: 0.6, Average Time: 6.567s

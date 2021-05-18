@@ -57,8 +57,11 @@ if __name__ == '__main__':
     logSolver = True
     activate_logging()
 
+    # Configure algorithm
     heuristic_type = HeuristicType.Exhaustive
     enable_cat = True
+
+    # Configure benchmark
     progressive_descriptor = ProgressiveDescriptor(
         min_agents=20,
         max_agents=20,

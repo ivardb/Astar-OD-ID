@@ -10,6 +10,12 @@ class Groups:
             for agent in group.agent_ids:
                 self.group_map[agent] = group
 
+    def __iter__(self):
+        return self.groups.__iter__()
+
+    def __next__(self):
+        return self.groups.__next__()
+
     def combine_agents(self, a, b) -> Group:
         group_a = self.group_map[a]
         group_b = self.group_map[b]
