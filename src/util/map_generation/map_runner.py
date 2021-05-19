@@ -1,3 +1,4 @@
+import os
 from multiprocessing import Pool
 from typing import Optional
 
@@ -39,12 +40,13 @@ class BenchmarkQueue:
 
 class Dummy:
 
-    def __init__(self, timeout, heuristic_type):
+    def __init__(self, timeout, heuristic_type, enable_id):
         self.timeout = timeout
         self.heuristic_type = heuristic_type
+        self.enable_id = enable_id
 
     def __call__(self, object):
-        return test(object, self.timeout, self.heuristic_type)
+        return test(object, self.timeout, self.heuristic_type, self.enable_id)
 
 
 class MapRunner:
@@ -67,8 +69,8 @@ class MapRunner:
     def test_generated(self, timeout, folder):
         problems = self.map_parser.parse_batch(folder)
 
-        with Pool(processes=4) as p:
-            res = p.map(Dummy(timeout, self.heuristic_type), problems)
+        with Pool(processes=processes) as p:
+            res = p.map(Dummy(timeout, self.heuristic_type, enable_id), problems)
         print()
 
         solved = 0
@@ -77,14 +79,16 @@ class MapRunner:
             solved += s
             if t is not None:
                 times.append(t)
+        if len(times) == 0:
+            return 0, 0, 0
         mean = numpy.mean(times)
         std = numpy.std(times)
         return solved/len(problems), round(mean, 3), round(std, 5)
 
 
-def test(problem: Problem, time_out, heuristic_type):
+def test(problem: Problem, time_out, heuristic_type, enable_id):
     start_time = time.process_time()
-    solution = timeout(problem, time_out, heuristic_type)
+    solution = timeout(problem, time_out, heuristic_type, enable_id)
     print('.', end='')
     if solution is not None:
         return 1, (time.process_time() - start_time)
@@ -92,9 +96,9 @@ def test(problem: Problem, time_out, heuristic_type):
         return 0, None
 
 
-def timeout(current_problem: Problem, time_out, heuristic_type) -> Optional[Solution]:
+def timeout(current_problem: Problem, time_out, heuristic_type, enable_id) -> Optional[Solution]:
     try:
-        sol = func_timeout(time_out, solve, args=(current_problem, heuristic_type))
+        sol = func_timeout(time_out, solve, args=(current_problem, heuristic_type, enable_id))
 
     except FunctionTimedOut:
         sol = None
@@ -104,7 +108,7 @@ def timeout(current_problem: Problem, time_out, heuristic_type) -> Optional[Solu
     return sol
 
 
-def solve(starting_problem: Problem, heuristic_type):
+def solve(starting_problem: Problem, heuristic_type, enable_id):
     if enable_id:
         return solve_with_id(starting_problem, heuristic_type)
     else:
@@ -132,7 +136,9 @@ def solve_no_id(starting_problem: Problem, heuristic_type):
 
 if __name__ == "__main__":
     enable_id = True
+    processes = 4
     map_root = "../../../maps"
+    result_root = "../../../results"
     queue = BenchmarkQueue("queue.txt")
     runner = MapRunner(map_root, HeuristicType.Exhaustive)
-    runner.test_queue(30, queue, "test.txt")
+    runner.test_queue(30, queue, os.path.join(result_root, "ID.txt"))
