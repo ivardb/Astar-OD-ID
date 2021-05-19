@@ -7,6 +7,9 @@ from src.Astar.ODProblem import ODProblem
 from src.Astar.ODState import ODState
 from src.util.AgentPath import AgentPath
 from src.util.coord import Coord
+from src.util.logger.logger import Logger
+
+logger = Logger("Solver")
 
 
 class Node:
@@ -46,7 +49,7 @@ class Solver:
             popped += 1
             current = heappop(frontier)
             if popped % 100000 == 0:
-                print(f"Count: {popped}, Heuristic: {current.heuristic}, Cost: {current.cost}, F: {current.cost + current.heuristic}, Frontier size: {len(frontier)}, Max: {self.max_cost}")
+                logger.log(f"Count: {popped}, Heuristic: {current.heuristic}, Cost: {current.cost}, F: {current.cost + current.heuristic}, Frontier size: {len(frontier)}, Max: {self.max_cost}")
             if self.problem.is_final(current.state):
                 return self.get_path(current)
             if current.state.is_standard():

@@ -27,3 +27,12 @@ class Group:
             new_ids.append(other.agent_ids[j])
             j += 1
         return Group(new_ids)
+
+    def __str__(self):
+        return self.agent_ids.__str__()
+
+    def __len__(self):
+        return self.agent_ids.__len__()
+
+    def __getitem__(self, item):
+        return self.agent_ids.__getitem__(item)

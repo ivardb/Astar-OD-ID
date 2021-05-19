@@ -27,7 +27,7 @@ class AgentPath:
         while i < n and i < m:
             if self[i] == other[i]:
                 return True
-            if self[i-1] == other[i] and self[i] == other[i-1]:
+            if self[i - 1] == other[i] and self[i] == other[i - 1]:
                 return True
             i += 1
         while i < n:
@@ -46,3 +46,16 @@ class AgentPath:
         for path in paths:
             solution.append([(coord.x, coord.y) for coord in path.coords])
         return Solution.from_paths(solution)
+
+    def get_cost(self):
+        cost = len(self)
+        last = self[-1]
+        i = 2
+        if i > len(self):
+            return cost
+        while self[-i] == last:
+            cost -= 1
+            i += 1
+            if i > len(self):
+                break
+        return cost

@@ -1,18 +1,16 @@
 import subprocess
-from typing import Optional
 
-from func_timeout import func_timeout, FunctionTimedOut
 from mapfmclient import Problem, Solution, MapfBenchmarker, BenchmarkDescriptor, ProgressiveDescriptor
 
-from src.AstarID.IDProblem import IDProblem
+from src.AstarID.MatchingID import MatchingID
 from src.util.grid import HeuristicType
-from src.util.visualization.visualizer import visualize
+from src.util.logger.logger import Logger
 
 
 def solve(starting_problem: Problem) -> Solution:
     print()
-    problem = IDProblem(starting_problem, heuristic_type)
-    solution = problem.solve()
+    problem = MatchingID(starting_problem, heuristic_type)
+    solution = problem.solve(enable_cat=enable_cat)
     if solution is None:
         print("Failed to find solution")
         return None
@@ -33,15 +31,42 @@ def get_name() -> str:
         return "A* + OD + ID with heuristic matching"
 
 
-if __name__ == '__main__':
-    version = "1.3.0"
-    debug = True
-    heuristic_type = HeuristicType.Color
+def run_benchmark():
     api_token = open("../apitoken.txt", "r").read().strip()
-    prog = progressive_descriptor=ProgressiveDescriptor(
+    benchmark = MapfBenchmarker(api_token, descriptor,
+                                  get_name(), get_version(), debug, solver=solve, cores=1)
+    benchmark.run()
+
+
+def activate_logging():
+    loggers = []
+    if logMatching:
+        loggers.append("MatchingID")
+    if logID:
+        loggers.append("IDProblem")
+    if logSolver:
+        loggers.append("Solver")
+    Logger.activate_loggers(*loggers)
+    Logger.activate()
+
+
+if __name__ == '__main__':
+    # Configure logging
+    logMatching = True
+    logID = True
+    logSolver = True
+    activate_logging()
+
+    # Configure algorithm
+    heuristic_type = HeuristicType.Exhaustive
+    enable_cat = True
+
+    # Configure benchmark
+    progressive_descriptor = ProgressiveDescriptor(
         min_agents=20,
         max_agents=20,
         num_teams=10)
-    benchmarker = MapfBenchmarker(api_token, BenchmarkDescriptor(22),
-                                  get_name(), get_version(), debug, solver=solve, cores=1)
-    benchmarker.run()
+    descriptor = BenchmarkDescriptor(14)
+    debug = True
+    version = "1.4.0"
+    run_benchmark()
