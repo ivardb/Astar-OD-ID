@@ -12,6 +12,8 @@ from src.util.grid import HeuristicType, Grid
 from src.util.group import Group
 from src.util.map_generation.map_parser import MapParser
 
+import numpy
+
 
 class BenchmarkQueue:
 
@@ -56,9 +58,9 @@ class MapRunner:
         task = queue.get_next()
         while task is not None and task != "":
             with open(output, 'a') as f:
-                res, duration = self.test_generated(timeout, task)
-                f.write(f"{task}: Completed: {res}, Average Time: {duration}s\n")
-                print(f"{task}: {res} with average {duration}s\n")
+                res, mean, std = self.test_generated(timeout, task)
+                f.write(f"{task}: Completed: {res}, Average Time: {mean}, Standard Deviation: {std}\n")
+                print(f"{task}: {res} with average {mean}s and deviaton: {std}\n")
                 queue.completed()
                 task = queue.get_next()
 
@@ -73,14 +75,11 @@ class MapRunner:
         times = []
         for s, t in res:
             solved += s
-            times.append(t)
-        total = 0
-        count = 0
-        for duration in times:
-            if duration is not None:
-                total += duration
-                count += 1
-        return solved/len(problems), round(total/count, 3)
+            if t is not None:
+                times.append(t)
+        mean = numpy.mean(times)
+        std = numpy.std(times)
+        return solved/len(problems), round(mean, 3), round(std, 5)
 
 
 def test(problem: Problem, time_out, heuristic_type):
@@ -95,7 +94,7 @@ def test(problem: Problem, time_out, heuristic_type):
 
 def timeout(current_problem: Problem, time_out, heuristic_type) -> Optional[Solution]:
     try:
-        sol = func_timeout(time_out, solve_no_id, args=(current_problem, heuristic_type))
+        sol = func_timeout(time_out, solve, args=(current_problem, heuristic_type))
 
     except FunctionTimedOut:
         sol = None
@@ -106,6 +105,13 @@ def timeout(current_problem: Problem, time_out, heuristic_type) -> Optional[Solu
 
 
 def solve(starting_problem: Problem, heuristic_type):
+    if enable_id:
+        return solve_with_id(starting_problem, heuristic_type)
+    else:
+        return solve_no_id(starting_problem, heuristic_type)
+
+
+def solve_with_id(starting_problem: Problem, heuristic_type):
     problem = MatchingID(starting_problem, heuristic_type)
     solution = problem.solve()
     if solution is None:
@@ -125,7 +131,8 @@ def solve_no_id(starting_problem: Problem, heuristic_type):
 
 
 if __name__ == "__main__":
+    enable_id = True
     map_root = "../../../maps"
     queue = BenchmarkQueue("queue.txt")
     runner = MapRunner(map_root, HeuristicType.Exhaustive)
-    runner.test_queue(30, queue, "MatchingIDComparison.txt")
+    runner.test_queue(30, queue, "test.txt")

@@ -15,13 +15,6 @@ class MapGenerator:
     def __init__(self, map_root):
         self.map_root = map_root
 
-    @staticmethod
-    def map_printer(grid: List[List[int]]):
-        print('██' * (len(grid[0]) + 2))
-        for y in range(len(grid)):
-            print('██' + ''.join(['  ' if pos == 0 else '██' for pos in grid[y]]) + '██')
-        print('██' * (len(grid[0]) + 2))
-
     def generate_map(self, width: int,
                      height: int,
                      num_agents: List[int],
@@ -59,7 +52,6 @@ class MapGenerator:
                         start_locations.append(MarkedLocation(color, starts[i].x, starts[i].y))
                         goal_locations.append(MarkedLocation(color, goals[i].x, goals[i].y))
                         i += 1
-                self.map_printer(grid)
                 return Problem(width=width, height=height, grid=grid, starts=start_locations, goals=goal_locations)
 
     def generate_map_file(self, name, width: int,
@@ -73,9 +65,9 @@ class MapGenerator:
         self.__store_map(name, problem)
 
     def generate_even_batch(self, amount: int, width: int, height: int, agents: int, teams: int,
-                            package_name: str = None, file_name: str = None, open_factor: float = 0.75,
+                            prefix="", package_name: str = None, file_name: str = None, open_factor: float = 0.75,
                             max_neighbors: int = 1, min_goal_distance: float = 0.5, max_goal_distance: float = 1):
-        package_name = package_name if package_name is not None else f"{width}x{height}-A{agents}_T{teams}"
+        package_name = package_name if package_name is not None else f"{prefix}-{width}x{height}-A{agents}_T{teams}"
         file_name = package_name if file_name is None else file_name
         min_team_count = int(agents/teams)
         diff = agents - (min_team_count * teams)
@@ -227,4 +219,5 @@ class MapGenerator:
 
 if __name__ == '__main__':
     map_generator = MapGenerator("../../../maps")
-    map_generator.generate_even_batch(10, 10, 10, 4, 2, package_name="test")
+    for i in range(1, 11):
+        map_generator.generate_even_batch(50, 20, 20, i, 3, prefix="Open", min_goal_distance=0, open_factor=1, max_neighbors=4)
