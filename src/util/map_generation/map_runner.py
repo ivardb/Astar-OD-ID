@@ -80,7 +80,7 @@ class MapRunner:
             if t is not None:
                 times.append(t)
         if len(times) == 0:
-            return 0, 0, 0
+            return 0.0, 'nan', 'nan'
         mean = numpy.mean(times)
         std = numpy.std(times)
         return solved/len(problems), round(mean, 3), round(std, 5)
@@ -135,10 +135,10 @@ def solve_no_id(starting_problem: Problem, heuristic_type):
 
 
 if __name__ == "__main__":
-    enable_id = True
+    enable_id = False
     processes = 4
     map_root = "../../../maps"
     result_root = "../../../results"
     queue = BenchmarkQueue("queue.txt")
-    runner = MapRunner(map_root, HeuristicType.Exhaustive)
-    runner.test_queue(30, queue, os.path.join(result_root, "ID.txt"))
+    runner = MapRunner(map_root, HeuristicType.Heuristic)
+    runner.test_queue(30, queue, os.path.join(result_root, "Heuristic.txt"))
