@@ -16,6 +16,15 @@ class Node:
     __slots__ = ("state", "cost", "heuristic", "conflicts", "time_step", "parent")
 
     def __init__(self, time_step: int, state: ODState, cost, heuristic, conflicts: int, parent=None):
+        """
+        Construct a node.
+        :param time_step: The current time_step
+        :param state: The state
+        :param cost: The cost so far
+        :param heuristic: The heuristic of the state
+        :param conflicts: The number of conflicts so far
+        :param parent: The parent node
+        """
         self.state = state
         self.cost = cost
         self.heuristic = heuristic
@@ -23,7 +32,29 @@ class Node:
         self.time_step = time_step
         self.parent = parent
 
+    def get_path(self) -> List[AgentPath]:
+        """
+        Return the path that lead to this node.
+        :return: The path from the root node to this node.
+        """
+        curr = self
+        state_path = []
+        while curr is not None:
+            if curr.state.is_standard():
+                state_path.insert(0, curr.state)
+            curr = curr.parent
+        paths = [[] for _ in state_path[0].agents]
+        for path in state_path:
+            for index, agent in enumerate(path.agents):
+                paths[index].append(agent.coords)
+        return [AgentPath(agent.id, agent.color, path) for path, agent in zip(paths, state_path[0].agents)]
+
     def __lt__(self, other: Node):
+        """
+        Sorts on cost + heuristic with conflicts and heuristic as tiebreaks.
+        :param other: The node to compare to
+        :return: If this node is smaller
+        """
         return (self.cost + self.heuristic, self.conflicts, self.heuristic) \
                < (other.cost + other.heuristic, other.conflicts, other.heuristic)
 
@@ -31,10 +62,19 @@ class Node:
 class Solver:
 
     def __init__(self, problem: ODProblem, max_cost=None):
+        """
+        Create a OD A* solver.
+        :param problem: The problem to solve.
+        :param max_cost: The maximum cost allowed.
+        """
         self.problem = problem
         self.max_cost = float("inf") if max_cost is None else max_cost
 
     def solve(self) -> Optional[List[AgentPath]]:
+        """
+        Solve the given problem.
+        :return: A list of non-conflicting path for all agents if a solution exists, otherwise None
+        """
         initial_state, initial_cost = self.problem.initial_state()
         initial_heuristic = self.problem.heuristic(initial_state)
 
@@ -51,7 +91,7 @@ class Solver:
             if popped % 100000 == 0:
                 logger.log(f"Count: {popped}, Heuristic: {current.heuristic}, Cost: {current.cost}, F: {current.cost + current.heuristic}, Frontier size: {len(frontier)}, Max: {self.max_cost}")
             if self.problem.is_final(current.state):
-                return self.get_path(current)
+                return current.get_path()
             if current.state.is_standard():
                 if current.state in expanded:
                     continue
@@ -66,20 +106,11 @@ class Solver:
                         heappush(frontier, node)
         return None
 
-    def get_path(self, node: Node) -> List[AgentPath]:
-        curr = node
-        state_path = []
-        while curr is not None:
-            if curr.state.is_standard():
-                state_path.insert(0, curr.state)
-            curr = curr.parent
-        paths = [[] for _ in state_path[0].agents]
-        for path in state_path:
-            for index, agent in enumerate(path.agents):
-                paths[index].append(agent.coords)
-        return [AgentPath(agent.id, agent.color, path) for path, agent in zip(paths, state_path[0].agents)]
-
     def pretty_print(self, state):
+        """
+        Pretty print the state.
+        :param state: The state to print on the grid
+        """
         grid = self.problem.grid
         for j in range(grid.h):
             for i in range(grid.w):

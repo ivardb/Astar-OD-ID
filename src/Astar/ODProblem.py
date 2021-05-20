@@ -16,7 +16,7 @@ class ODProblem:
         Creates a problem to be solved by the A*+OD solver
         :param grid: The grid with walls as well as the starting positions and end positions
         :param group: The group of agents to solve
-        :param cats: The CAT table to tiebreak on amount of conflicts caused
+        :param cats: The CAT tables to tiebreak on amount of conflicts caused
         :param illegal_moves: Predetermined paths
         :param assigned_goals: The goals for each agent
         """
@@ -67,12 +67,31 @@ class ODProblem:
         return res
 
     def initial_state(self) -> Tuple[ODState, int]:
+        """
+        Returns the initial state as well as the initial cost.
+        The initial cost takes into account the predetermined moves used by ID,
+        as well as the initial cost in the mapf.nl cost calculation
+        :return: The initial state and the initial cost
+        """
         return self.initial, self.initial.construction_cost + len(self.initial.agents)
 
     def is_final(self, state: ODState) -> bool:
+        """
+        Checks if the given state is a final state.
+        :param state: The state to check
+        :return: If the state is final
+        """
         return self.grid.is_final(state.agents)
 
     def heuristic(self, state: ODState) -> int:
+        """
+        Calculates the heuristic of the state.
+        The calculation depends on if specific goals are given or not.
+        If goals are assigned the distance to those goals is used as heuristic,
+        otherwise the distance to the nearest goal of the same color is used.
+        :param state: The state to calculate for.
+        :return: The sum of heuristics for all agents in the state.
+        """
         h = 0
         if self.assigned_goals is None:
             for agent in state.new_agents:
@@ -87,6 +106,11 @@ class ODProblem:
         return h
 
     def get_cat(self, coords) -> int:
+        """
+        Calculates the number of collisions at the given coordinates.
+        :param coords: Where to check for collisions.
+        :return: The number of collisions
+        """
         res = 0
         for cat in self.cats:
             res += cat.get_cat(self.agent_ids, coords)

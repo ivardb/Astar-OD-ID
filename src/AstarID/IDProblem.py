@@ -19,6 +19,12 @@ logger = Logger("IDProblem")
 class IDProblem:
 
     def __init__(self, grid: Grid, heuristic_type: HeuristicType, group: Group):
+        """
+        Create an A*+ID+OD problem.
+        :param grid: The grid of the problem.
+        :param heuristic_type: The type of heuristic to use.
+        :param group: The subgroup of agents to solve the problem for.
+        """
         self.grid = grid
         self.groups = None
         self.assigned_goals = None
@@ -39,6 +45,11 @@ class IDProblem:
             self.assigned_goals = filter(lambda x: len(x) == len(set(x)), itertools.product(*goal_ids))
 
     def solve(self, cat=None) -> Optional[List[AgentPath]]:
+        """
+        Tries to solve the problem.
+        :param cat: An optional Collision Avoidance table to use for all paths.
+        :return: A list of paths for the given agents if a solution exists otherwise None
+        """
         if self.heuristic_type == HeuristicType.Heuristic:
             return self.solve_matching(cat)
         else:
@@ -54,7 +65,14 @@ class IDProblem:
                         best_solution = solution
             return best_solution
 
-    def solve_matching(self, cat: CAT, maximum=float("inf"), assigned_goals: dict = None) -> Optional[List[AgentPath]]:
+    def solve_matching(self, cat: Optional[CAT], maximum=float("inf"), assigned_goals: dict = None) -> Optional[List[AgentPath]]:
+        """
+        Solves the problem with either an assigned matching or otherwise using a different heuristic.
+        :param cat: The optional additional Collision Avoidance table to use.
+        :param maximum: A maximum cost. Anything above this cost will be discarded.
+        :param assigned_goals: A possible goal assignment when using exhaustive matching. Not needed when heuristic matching is used.
+        :return: A list of paths if a solution exists, otherwise None
+        """
         paths = PathSet(self.grid, self.agent_ids, self.heuristic_type, assigned_goals=assigned_goals)
         # Create list of used Collision Avoidance Tables
         cats = list()

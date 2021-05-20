@@ -93,6 +93,11 @@ class ODState:
         return state, state.construction_cost
 
     def valid_next(self, new_agent: Agent) -> bool:
+        """
+        Verifies if the given agent would cause conflicts with the current agents.
+        :param new_agent: The agent to check for.
+        :return: True if no conflicts would be caused.
+        """
         for i, agent in enumerate(self.new_agents):
             # Vertex conflict
             if agent.coords == new_agent.coords:
@@ -104,6 +109,10 @@ class ODState:
         return True
 
     def is_standard(self) -> bool:
+        """
+        Returns if the state is standard or intermediate.
+        :return: True if the state is standard.
+        """
         # A state is standard if either there are no non-predetermined post_move agents
         return len(self.new_agents) == self.illegal_size
 

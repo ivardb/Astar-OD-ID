@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Iterator
 
 
@@ -5,9 +7,18 @@ class Group:
     __slots__ = "agent_ids"
 
     def __init__(self, agent_ids: Iterator[int]):
+        """
+        Create a group from the agent_ids
+        :param agent_ids: The agent_ids
+        """
         self.agent_ids = tuple(agent_ids)
 
-    def combine(self, other):
+    def combine(self, other) -> Group:
+        """
+        Combine this group with another one.
+        :param other: The other group
+        :return: The new group
+        """
         i = 0
         j = 0
         n = len(self.agent_ids)
