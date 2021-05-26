@@ -1,3 +1,5 @@
+import random
+from heapq import heappush, heappop
 from typing import Optional, List
 
 import itertools
@@ -15,10 +17,19 @@ from src.util.logger.logger import Logger
 
 logger = Logger("IDProblem")
 
+class Matching:
+
+    def __init__(self, goals, cost):
+        self.goals = goals
+        self.cost = cost
+
+    def __lt__(self, other):
+        return self.cost < other.cost
+
 
 class IDProblem:
 
-    def __init__(self, grid: Grid, heuristic_type: HeuristicType, group: Group):
+    def __init__(self, grid: Grid, heuristic_type: HeuristicType, group: Group, enable_sorting=False, pq_size=10):
         """
         Create an A*+ID+OD problem.
         :param grid: The grid of the problem.
@@ -30,9 +41,11 @@ class IDProblem:
         self.assigned_goals = None
         self.heuristic_type = heuristic_type
         self.agent_ids = group.agent_ids
+        self.enable_sorting = enable_sorting
 
         # Generate iterator with all possible matchings
         if heuristic_type == HeuristicType.Exhaustive:
+            self.pq_size = pq_size
             goal_ids = []
             for agent_id in self.agent_ids:
                 start = self.grid.starts[agent_id]
@@ -43,6 +56,38 @@ class IDProblem:
                 ids.sort(key=lambda x: self.grid.get_heuristic(Coord(start.x, start.y), x))
                 goal_ids.append(ids)
             self.assigned_goals = filter(lambda x: len(x) == len(set(x)), itertools.product(*goal_ids))
+            if enable_sorting:
+                assigned_goals = list(self.assigned_goals)
+                if 0.5 * len(assigned_goals) > pq_size:
+                    random.shuffle(assigned_goals)
+                self.assigned_goals = iter(assigned_goals)
+                self.goal_pq = []
+
+    def get_next_goal(self, maximum):
+        if not self.enable_sorting:
+            return next(self.assigned_goals, None)
+        while len(self.goal_pq) < self.pq_size:
+            next_push = next(self.assigned_goals, None)
+            if next_push is None:
+                break
+            heuristic = self.get_initial_heuristic(next_push)
+            if heuristic < maximum:
+                heappush(self.goal_pq, Matching(next_push, heuristic))
+        if len(self.goal_pq) == 0:
+            return None
+        next_goal = heappop(self.goal_pq)
+        if next_goal.cost >= maximum:
+            self.goal_pq = []
+            return self.get_next_goal(maximum)
+        else:
+            return next_goal.goals
+
+    def get_initial_heuristic(self, goals) -> int:
+        h = len(goals)
+        for agent_id, index in zip(self.agent_ids, goals):
+            start = self.grid.starts[agent_id]
+            h += self.grid.get_heuristic(Coord(start.x, start.y), index)
+        return h
 
     def solve(self, cat=None) -> Optional[List[AgentPath]]:
         """
@@ -55,7 +100,8 @@ class IDProblem:
         else:
             best = float("inf")
             best_solution = None
-            for goals in self.assigned_goals:
+            goals = self.get_next_goal(best)
+            while goals is not None:
                 logger.log(f"Trying goal assignment of {goals} with maximum cost of {best}")
                 solution = self.solve_matching(cat, best, dict(zip(self.agent_ids, goals)))
                 if solution is not None:
@@ -63,6 +109,7 @@ class IDProblem:
                     if cost < best:
                         best = cost
                         best_solution = solution
+                goals = self.get_next_goal(best)
             return best_solution
 
     def solve_matching(self, cat: Optional[CAT], maximum=float("inf"), assigned_goals: dict = None) -> Optional[List[AgentPath]]:

@@ -1,0 +1,13 @@
+00
+Obstacles65-20x20-A7_T1: Completed: 0.98, Average Time: 1.298, Standard Deviation: 1.67562
+Obstacles65-20x20-A7_T3: Completed: 1.0, Average Time: 0.087, Standard Deviation: 0.08114
+10
+Obstacles65-20x20-A7_T1: Completed: 0.98, Average Time: 1.4, Standard Deviation: 1.87072
+Obstacles65-20x20-A7_T3: Completed: 1.0, Average Time: 0.063, Standard Deviation: 0.04187
+01
+Obstacles65-20x20-A7_T1: Completed: 0.98, Average Time: 0.444, Standard Deviation: 0.098
+Obstacles65-20x20-A7_T3: Completed: 1.0, Average Time: 0.044, Standard Deviation: 0.01432
+11
+Obstacles65-20x20-A7_T1: Completed: 1.0, Average Time: 0.51, Standard Deviation: 0.45253
+Obstacles65-20x20-A7_T3: Completed: 1.0, Average Time: 0.048, Standard Deviation: 0.01282
+

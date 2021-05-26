@@ -15,7 +15,7 @@ logger = Logger("MatchingID")
 
 class MatchingID:
 
-    def __init__(self, problem: Problem, heuristic_type: HeuristicType = HeuristicType.Exhaustive):
+    def __init__(self, problem: Problem, heuristic_type: HeuristicType = HeuristicType.Exhaustive, enable_sorting=False):
         """
         Create a problem that uses matching ID, only makes sense for Exhaustive matching.
         :param problem: The problem to solve.
@@ -23,6 +23,7 @@ class MatchingID:
         """
         self.grid = Grid(problem.grid, problem.width, problem.height, problem.starts, problem.goals, heuristic_type)
         self.heuristic_type = heuristic_type
+        self.enable_sorting = enable_sorting
 
         max_team = max(map(lambda x: x.color, self.grid.starts))
         teams = [list() for _ in range(max_team + 1)]
@@ -39,7 +40,7 @@ class MatchingID:
         path_set = GroupPathSet(len(self.grid.starts), self.grid.w, self.grid.h, self.teams, enable_cat)
         for group in path_set.groups.groups:
             logger.log(f"Solving agents: {group}")
-            id_problem = IDProblem(self.grid, self.heuristic_type, group)
+            id_problem = IDProblem(self.grid, self.heuristic_type, group, enable_sorting=self.enable_sorting)
             paths = id_problem.solve(cat=path_set.cat)
             if paths is None:
                 return None
@@ -49,7 +50,7 @@ class MatchingID:
             a, b = conflict
             new_group = path_set.groups.combine_agents(a, b)
             logger.log(f"Solving agents: {new_group}")
-            id_problem = IDProblem(self.grid, self.heuristic_type, new_group)
+            id_problem = IDProblem(self.grid, self.heuristic_type, new_group, enable_sorting=self.enable_sorting)
             paths = id_problem.solve(cat=path_set.cat)
             if paths is None:
                 return None

@@ -40,13 +40,14 @@ class BenchmarkQueue:
 
 class Dummy:
 
-    def __init__(self, timeout, heuristic_type, enable_id):
+    def __init__(self, timeout, heuristic_type, enable_id, enable_sorting):
         self.timeout = timeout
         self.heuristic_type = heuristic_type
         self.enable_id = enable_id
+        self.enable_sorting = enable_sorting
 
     def __call__(self, object):
-        return test(object, self.timeout, self.heuristic_type, self.enable_id)
+        return test(object, self.timeout, self.heuristic_type, self.enable_id, self.enable_sorting)
 
 
 class MapRunner:
@@ -70,7 +71,7 @@ class MapRunner:
         problems = self.map_parser.parse_batch(folder)
 
         with Pool(processes=processes) as p:
-            res = p.map(Dummy(timeout, self.heuristic_type, enable_id), problems)
+            res = p.map(Dummy(timeout, self.heuristic_type, enable_id, enable_sorting), problems)
         print()
 
         solved = 0
@@ -86,9 +87,9 @@ class MapRunner:
         return solved/len(problems), round(mean, 3), round(std, 5)
 
 
-def test(problem: Problem, time_out, heuristic_type, enable_id):
+def test(problem: Problem, time_out, heuristic_type, enable_id, enable_sorting):
     start_time = time.process_time()
-    solution = timeout(problem, time_out, heuristic_type, enable_id)
+    solution = timeout(problem, time_out, heuristic_type, enable_id, enable_sorting)
     print('.', end='')
     if solution is not None:
         return 1, (time.process_time() - start_time)
@@ -96,9 +97,9 @@ def test(problem: Problem, time_out, heuristic_type, enable_id):
         return 0, None
 
 
-def timeout(current_problem: Problem, time_out, heuristic_type, enable_id) -> Optional[Solution]:
+def timeout(current_problem: Problem, time_out, heuristic_type, enable_id, enable_sorting) -> Optional[Solution]:
     try:
-        sol = func_timeout(time_out, solve, args=(current_problem, heuristic_type, enable_id))
+        sol = func_timeout(time_out, solve, args=(current_problem, heuristic_type, enable_id, enable_sorting))
 
     except FunctionTimedOut:
         sol = None
@@ -108,15 +109,15 @@ def timeout(current_problem: Problem, time_out, heuristic_type, enable_id) -> Op
     return sol
 
 
-def solve(starting_problem: Problem, heuristic_type, enable_id):
+def solve(starting_problem: Problem, heuristic_type, enable_id, enable_sorting):
     if enable_id:
-        return solve_with_id(starting_problem, heuristic_type)
+        return solve_with_id(starting_problem, heuristic_type, enable_sorting)
     else:
-        return solve_no_id(starting_problem, heuristic_type)
+        return solve_no_id(starting_problem, heuristic_type, enable_sorting)
 
 
-def solve_with_id(starting_problem: Problem, heuristic_type):
-    problem = MatchingID(starting_problem, heuristic_type)
+def solve_with_id(starting_problem: Problem, heuristic_type, enable_sorting):
+    problem = MatchingID(starting_problem, heuristic_type, enable_sorting=enable_sorting)
     solution = problem.solve()
     if solution is None:
         print("Failed to find solution")
@@ -124,9 +125,9 @@ def solve_with_id(starting_problem: Problem, heuristic_type):
     return solution
 
 
-def solve_no_id(starting_problem: Problem, heuristic_type):
+def solve_no_id(starting_problem: Problem, heuristic_type, enable_sorting):
     grid = Grid(starting_problem.grid, starting_problem.width, starting_problem.height, starting_problem.starts, starting_problem.goals, heuristic_type)
-    id_problem = IDProblem(grid, heuristic_type, Group(range(len(starting_problem.starts))))
+    id_problem = IDProblem(grid, heuristic_type, Group(range(len(starting_problem.starts))), enable_sorting=enable_sorting)
     solution = id_problem.solve()
     if solution is None:
         print("Failed to find solution")
@@ -135,10 +136,11 @@ def solve_no_id(starting_problem: Problem, heuristic_type):
 
 
 if __name__ == "__main__":
-    enable_id = False
+    enable_id = True
+    enable_sorting = True
     processes = 4
     map_root = "../../../maps"
     result_root = "../../../results"
     queue = BenchmarkQueue("queue.txt")
-    runner = MapRunner(map_root, HeuristicType.Heuristic)
-    runner.test_queue(30, queue, os.path.join(result_root, "Heuristic.txt"))
+    runner = MapRunner(map_root, HeuristicType.Exhaustive)
+    runner.test_queue(30, queue, os.path.join(result_root, "Sorting.txt"))
