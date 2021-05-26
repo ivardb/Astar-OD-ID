@@ -17,19 +17,30 @@ from src.util.logger.logger import Logger
 
 logger = Logger("IDProblem")
 
+
 class Matching:
 
     def __init__(self, goals, cost):
+        """
+        Create a matching object for sorting in priority queue.
+        :param goals: The goal assignment
+        :param cost: The cost, used for sorting
+        """
         self.goals = goals
         self.cost = cost
 
     def __lt__(self, other):
+        """
+        Compares the costs
+        :param other: The other Matching
+        :return: If this one is smaller
+        """
         return self.cost < other.cost
 
 
 class IDProblem:
 
-    def __init__(self, grid: Grid, heuristic_type: HeuristicType, group: Group, enable_sorting=False, pq_size=10):
+    def __init__(self, grid: Grid, heuristic_type: HeuristicType, group: Group, enable_sorting=False, pq_size=1000):
         """
         Create an A*+ID+OD problem.
         :param grid: The grid of the problem.
@@ -64,6 +75,12 @@ class IDProblem:
                 self.goal_pq = []
 
     def get_next_goal(self, maximum):
+        """
+        Gets the next set of goal assignments.
+        Either from the iterator when sorting is disable or from the heap if it is enabled.
+        :param maximum: The maximum cost used for pruning when sorting is enabled
+        :return: The next goal assignment or None
+        """
         if not self.enable_sorting:
             return next(self.assigned_goals, None)
         while len(self.goal_pq) < self.pq_size:
@@ -83,7 +100,13 @@ class IDProblem:
             return next_goal.goals
 
     def get_initial_heuristic(self, goals) -> int:
+        """
+        Calculate the initial heuristic for a specific goal assignment
+        :param goals: The assigned goals
+        :return: The heuristic
+        """
         h = len(goals)
+        assert len(self.agent_ids) == len(goals)
         for agent_id, index in zip(self.agent_ids, goals):
             start = self.grid.starts[agent_id]
             h += self.grid.get_heuristic(Coord(start.x, start.y), index)
@@ -112,7 +135,8 @@ class IDProblem:
                 goals = self.get_next_goal(best)
             return best_solution
 
-    def solve_matching(self, cat: Optional[CAT], maximum=float("inf"), assigned_goals: dict = None) -> Optional[List[AgentPath]]:
+    def solve_matching(self, cat: Optional[CAT], maximum=float("inf"), assigned_goals: dict = None) -> Optional[
+        List[AgentPath]]:
         """
         Solves the problem with either an assigned matching or otherwise using a different heuristic.
         :param cat: The optional additional Collision Avoidance table to use.
