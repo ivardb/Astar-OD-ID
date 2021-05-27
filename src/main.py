@@ -80,8 +80,8 @@ if __name__ == '__main__':
     # Configure algorithm
     heuristic_type = HeuristicType.Exhaustive
     enable_cat = True
-    enable_id = True
-    enable_sorting = True
+    enable_id = False
+    enable_sorting = False
 
     # Configure benchmark
     progressive_descriptor = ProgressiveDescriptor(

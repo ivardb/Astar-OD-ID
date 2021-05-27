@@ -40,7 +40,7 @@ class Matching:
 
 class IDProblem:
 
-    def __init__(self, grid: Grid, heuristic_type: HeuristicType, group: Group, enable_sorting=False, pq_size=1000):
+    def __init__(self, grid: Grid, heuristic_type: HeuristicType, group: Group, enable_sorting=False, pq_size=100):
         """
         Create an A*+ID+OD problem.
         :param grid: The grid of the problem.

@@ -1,4 +1,5 @@
 import os.path
+from typing import Tuple, List
 
 from mapfmclient import MarkedLocation, Problem
 
@@ -42,9 +43,9 @@ class MapParser:
             goals.append(MarkedLocation(color, x, y))
         return Problem(grid, width, height, starts, goals)
 
-    def parse_batch(self, folder):
+    def parse_batch(self, folder) -> List[Tuple[str, Problem]]:
         paths = os.listdir(os.path.join(self.map_root, folder))
-        return [self.parse_map(str(os.path.join(folder, path))) for path in paths]
+        return [(str(path), self.parse_map(str(os.path.join(folder, path)))) for path in paths]
 
 
 if __name__ == "__main__":

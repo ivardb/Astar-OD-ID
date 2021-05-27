@@ -47,7 +47,7 @@ class Dummy:
         self.enable_sorting = enable_sorting
 
     def __call__(self, object):
-        return test(object, self.timeout, self.heuristic_type, self.enable_id, self.enable_sorting)
+        return object[0], test(object[1], self.timeout, self.heuristic_type, self.enable_id, self.enable_sorting)
 
 
 class MapRunner:
@@ -60,10 +60,10 @@ class MapRunner:
     def test_queue(self, timeout, queue: BenchmarkQueue, output):
         task = queue.get_next()
         while task is not None and task != "":
+            res = self.test_generated(timeout, task)
             with open(output, 'a') as f:
-                res, mean, std = self.test_generated(timeout, task)
-                f.write(f"{task}: Completed: {res}, Average Time: {mean}, Standard Deviation: {std}\n")
-                print(f"{task}: {res} with average {mean}s and deviaton: {std}\n")
+                for r in res:
+                    f.write(f"{task}, {r[0]}, {r[1]}\n")
                 queue.completed()
                 task = queue.get_next()
 
@@ -73,18 +73,7 @@ class MapRunner:
         with Pool(processes=processes) as p:
             res = p.map(Dummy(timeout, self.heuristic_type, enable_id, enable_sorting), problems)
         print()
-
-        solved = 0
-        times = []
-        for s, t in res:
-            solved += s
-            if t is not None:
-                times.append(t)
-        if len(times) == 0:
-            return 0.0, 'nan', 'nan'
-        mean = numpy.mean(times)
-        std = numpy.std(times)
-        return solved/len(problems), round(mean, 3), round(std, 5)
+        return res
 
 
 def test(problem: Problem, time_out, heuristic_type, enable_id, enable_sorting):
@@ -92,9 +81,9 @@ def test(problem: Problem, time_out, heuristic_type, enable_id, enable_sorting):
     solution = timeout(problem, time_out, heuristic_type, enable_id, enable_sorting)
     print('.', end='')
     if solution is not None:
-        return 1, (time.process_time() - start_time)
+        return time.process_time() - start_time
     else:
-        return 0, None
+        return None
 
 
 def timeout(current_problem: Problem, time_out, heuristic_type, enable_id, enable_sorting) -> Optional[Solution]:
@@ -143,4 +132,4 @@ if __name__ == "__main__":
     result_root = "../../../results"
     queue = BenchmarkQueue("queue.txt")
     runner = MapRunner(map_root, HeuristicType.Exhaustive)
-    runner.test_queue(30, queue, os.path.join(result_root, "Sorting.txt"))
+    runner.test_queue(30, queue, os.path.join(result_root, "test.txt"))
