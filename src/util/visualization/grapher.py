@@ -1,7 +1,6 @@
 import os
-from typing import List, Tuple
-
 import re
+from typing import List
 
 from matplotlib import pyplot as plt
 

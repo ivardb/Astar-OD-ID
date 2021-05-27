@@ -13,8 +13,6 @@ from src.util.grid import HeuristicType, Grid
 from src.util.group import Group
 from src.util.map_generation.map_parser import MapParser
 
-import numpy
-
 
 class BenchmarkQueue:
 
