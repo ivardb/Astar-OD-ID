@@ -48,7 +48,6 @@ class IDProblem:
         :param group: The subgroup of agents to solve the problem for.
         """
         self.grid = grid
-        self.groups = None
         self.assigned_goals = None
         self.heuristic_type = heuristic_type
         self.agent_ids = group.agent_ids
@@ -152,8 +151,8 @@ class IDProblem:
         cats.append(paths.cat)
 
         # Create initial agent paths
-        self.groups = Groups([Group([n]) for n in self.agent_ids])
-        for group in self.groups.groups:
+        groups = Groups([Group([n]) for n in self.agent_ids])
+        for group in groups:
             problem = ODProblem(self.grid, group, cats, assigned_goals=assigned_goals)
             solver = Solver(problem, max_cost=paths.get_remaining_cost(group.agent_ids, maximum))
             group_paths = solver.solve()
@@ -168,8 +167,8 @@ class IDProblem:
         while conflict is not None:
             combine_groups = True
             a, b = conflict
-            a_group = self.groups.group_map[a]
-            b_group = self.groups.group_map[b]
+            a_group = groups.group_map[a]
+            b_group = groups.group_map[b]
 
             # Check if the conflict has been solved before. If so it has clearly failed
             combo = (a_group.agent_ids, b_group.agent_ids)
@@ -205,7 +204,7 @@ class IDProblem:
 
             # Combine groups
             if combine_groups:
-                group = self.groups.combine_agents(a, b)
+                group = groups.combine_agents(a, b)
                 logger.log(f"Combining agents from groups of {a} and {b} into {group}")
                 problem = ODProblem(self.grid, group, cats, assigned_goals=assigned_goals)
                 solver = Solver(problem, max_cost=paths.get_remaining_cost(group.agent_ids, maximum))

@@ -58,6 +58,7 @@ class MapRunner:
     def test_queue(self, timeout, queue: BenchmarkQueue, output):
         task = queue.get_next()
         while task is not None and task != "":
+            print(task)
             res = self.test_generated(timeout, task)
             with open(output, 'a') as f:
                 for r in res:
@@ -77,7 +78,7 @@ class MapRunner:
 def test(problem: Problem, time_out, heuristic_type, enable_id, enable_sorting):
     start_time = time.process_time()
     solution = timeout(problem, time_out, heuristic_type, enable_id, enable_sorting)
-    print('.', end='')
+    print('.', end='', flush=True)
     if solution is not None:
         return time.process_time() - start_time
     else:
@@ -91,7 +92,6 @@ def timeout(current_problem: Problem, time_out, heuristic_type, enable_id, enabl
     except FunctionTimedOut:
         sol = None
     except Exception as e:
-        print(f"An error occurred while running: {e}")
         return None
     return sol
 

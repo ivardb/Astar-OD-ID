@@ -80,7 +80,7 @@ if __name__ == '__main__':
     # Configure algorithm
     heuristic_type = HeuristicType.Exhaustive
     enable_cat = True
-    enable_id = False
+    enable_id = True
     enable_sorting = False
 
     # Configure benchmark
@@ -88,7 +88,7 @@ if __name__ == '__main__':
         min_agents=20,
         max_agents=20,
         num_teams=10)
-    descriptor = BenchmarkDescriptor(1, progressive_descriptor)
+    descriptor = BenchmarkDescriptor(16)
     debug = True
-    version = "1.5.0"
+    version = "1.6.0"
     run_benchmark()
