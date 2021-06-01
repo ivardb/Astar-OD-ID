@@ -6,53 +6,63 @@ from src.util.coord import Coord
 
 class CAT:
 
-    def __init__(self, n, w, h, active=True):
+    def __init__(self, agent_ids, w, h, active=True):
         """
-        Create a Collision Avoidance Tabble.
-        :param n: The number of paths in the table
+        Create a Collision Avoidance Table.
+        :param agent_ids: All possible agent_ids
         :param w: The width
         :param h: The height
         :param active: Can be used to disable the table and always return 0
         """
         self.active = active
-        self.n = n
+        self.agent_ids = agent_ids
         self.cat = [[list() for _ in range(w)] for _ in range(h)]
+        self.length = dict()
 
-    def remove_cat(self, index, path: AgentPath):
+    def remove_cat(self, path: AgentPath):
         """
         Removes the collisions of the given path.
-        :param index: The path index in the table
         :param path: The path
         """
         if not self.active:
             return
         if path is None:
             return
-        for coord in path.coords:
-            self.cat[coord.y][coord.x].remove(index)
+        for i, coord in enumerate(path.coords):
+            self.cat[coord.y][coord.x].remove((path.agent_id, i))
 
-    def add_cat(self, index, path: AgentPath):
+    def add_cat(self, path: AgentPath):
         """
-        Adds the path to the table with the given index.
-        :param index: The index of the path
+        Adds the path to the table.
         :param path: The path
         """
         if not self.active:
             return
-        for coord in path.coords:
-            self.cat[coord.y][coord.x].append(index)
+        for i, coord in enumerate(path.coords):
+            self.cat[coord.y][coord.x].append((path.agent_id, i))
+        self.length[path.agent_id] = len(path)
 
-    def get_cat(self, ignored_paths: List[int], coord: Coord) -> int:
+    def get_cat(self, ignored_paths: List[int], coord: Coord, time) -> int:
         """
         Gets the number of collisions at the coordinates.
-        Ignores the indexes in the ignored_paths
-        :param ignored_paths: The indexes to ignore
+        Ignores the ids in the ignored_paths
+        :param ignored_paths: The ids to ignore
         :param coord: The location to check for conflicts
+        :param time: The time for which to check
         :return: The number of found conflicts
         """
+        collision = 0
         if self.active:
-            return sum(i in self.cat[coord.y][coord.x] for i in range(self.n) if i not in ignored_paths)
-        return 0
+            for key, value in self.length.items():
+                if time > value:
+                    if (key, value) in self.cat[coord.y][coord.x]:
+                        collision += 1
+            for agent_id in self.agent_ids:
+                if agent_id in ignored_paths:
+                    continue
+                if (agent_id, time) in self.cat[coord.y][coord.x]:
+                    collision += 1
+        return collision
 
     @staticmethod
     def empty():
@@ -60,4 +70,4 @@ class CAT:
         Creates an inactive Collision Avoidance Table.
         :return: An inactive CAT
         """
-        return CAT(0, 0, 0, active=False)
+        return CAT([], 0, 0, active=False)

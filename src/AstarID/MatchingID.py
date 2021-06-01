@@ -37,7 +37,7 @@ class MatchingID:
         :param enable_cat: Option to disable the Collision Avoidance for this layer. Has no effect on normal ID CAT
         :return: A solution if it exists.
         """
-        path_set = GroupPathSet(len(self.grid.starts), self.grid.w, self.grid.h, self.teams, enable_cat)
+        path_set = GroupPathSet(list(range(len(self.grid.starts))), self.grid.w, self.grid.h, self.teams, enable_cat)
         for group in path_set.groups.groups:
             logger.log(f"Solving agents: {group}")
             id_problem = IDProblem(self.grid, self.heuristic_type, group, enable_sorting=self.enable_sorting)
@@ -61,10 +61,10 @@ class MatchingID:
 
 class GroupPathSet:
 
-    def __init__(self, n, w, h, teams: List[Group], enable_cat):
+    def __init__(self, agent_ids, w, h, teams: List[Group], enable_cat):
         """
         Create a path set used to track the paths for MatchingID.
-        :param n: The number of paths
+        :param agent_ids: The agent_ids
         :param w: The width of the grid
         :param h: The height of the grid
         :param teams: The teams
@@ -72,8 +72,8 @@ class GroupPathSet:
         """
         self.groups = Groups(teams)
         self.remove_one_groups()
-        self.paths: List[Optional[AgentPath]] = [None for _ in range(n)]
-        self.cat = CAT(n, w, h) if enable_cat else CAT.empty()
+        self.paths: List[Optional[AgentPath]] = [None for _ in range(len(agent_ids))]
+        self.cat = CAT(agent_ids, w, h) if enable_cat else CAT.empty()
 
     def update(self, new_paths: Iterator[AgentPath]):
         """
@@ -82,9 +82,9 @@ class GroupPathSet:
         """
         for path in new_paths:
             i = path.agent_id
-            self.cat.remove_cat(i, self.paths[i])
+            self.cat.remove_cat(self.paths[i])
             self.paths[i] = path
-            self.cat.add_cat(i, path)
+            self.cat.add_cat(path)
 
     def find_conflict(self) -> Optional[Tuple[int, int]]:
         """

@@ -47,23 +47,23 @@ class ODProblem:
         """
         res = []
         agent, acc = parent.get_next()
-
+        child_time = current_time + 1
         for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
             new_agent = agent.move(dx, dy)
             if not self.grid.is_walkable(new_agent.coords):
                 continue
             if not parent.valid_next(new_agent):
                 continue
-            state, additional_cost = parent.move_with_agent(new_agent, 0, self.illegal_moves, current_time + 1)
-            res.append((state, acc + 1 + additional_cost, self.get_cat(new_agent.coords)))
+            state, additional_cost = parent.move_with_agent(new_agent, 0, self.illegal_moves, child_time)
+            res.append((state, acc + 1 + additional_cost, self.get_cat(new_agent.coords, child_time)))
         # Add standing still as option
         if parent.valid_next(agent):
             if self.grid.on_goal(agent):
-                state, additional_cost = parent.move_with_agent(agent, acc + 1, self.illegal_moves, current_time + 1)
-                res.append((state, additional_cost, self.get_cat(agent.coords)))
+                state, additional_cost = parent.move_with_agent(agent, acc + 1, self.illegal_moves, child_time)
+                res.append((state, additional_cost, self.get_cat(agent.coords, child_time)))
             else:
-                state, additional_cost = parent.move_with_agent(agent, 0, self.illegal_moves, current_time + 1)
-                res.append((state, 1 + additional_cost, self.get_cat(agent.coords)))
+                state, additional_cost = parent.move_with_agent(agent, 0, self.illegal_moves, child_time)
+                res.append((state, 1 + additional_cost, self.get_cat(agent.coords, child_time)))
         return res
 
     def initial_state(self) -> Tuple[ODState, int]:
@@ -105,7 +105,7 @@ class ODProblem:
                 h += self.grid.get_heuristic(state.agents[j].coords, self.assigned_goals[state.agents[j].id])
         return h
 
-    def get_cat(self, coords) -> int:
+    def get_cat(self, coords, time) -> int:
         """
         Calculates the number of collisions at the given coordinates.
         :param coords: Where to check for collisions.
@@ -113,5 +113,5 @@ class ODProblem:
         """
         res = 0
         for cat in self.cats:
-            res += cat.get_cat(self.agent_ids, coords)
+            res += cat.get_cat(self.agent_ids, coords, time)
         return res

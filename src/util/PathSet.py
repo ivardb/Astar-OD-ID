@@ -24,7 +24,7 @@ class PathSet:
             self.assigned_goals = assigned_goals
         self.paths: List[Optional[AgentPath]] = [None for _ in range(len(agent_ids))]
         self.costs: List[Optional[int]] = [None for _ in range(len(agent_ids))]
-        self.cat = CAT(len(agent_ids), grid.w, grid.h)
+        self.cat = CAT(agent_ids, grid.w, grid.h)
 
     def update(self, new_paths: Iterator[AgentPath]):
         """
@@ -34,9 +34,9 @@ class PathSet:
         """
         for path in new_paths:
             i = self.mapping[path.agent_id]
-            self.cat.remove_cat(i, self.paths[i])
+            self.cat.remove_cat(self.paths[i])
             self.paths[i] = path
-            self.cat.add_cat(i, path)
+            self.cat.add_cat(path)
             self.costs[i] = path.get_cost()
 
     def get_remaining_cost(self, indexes: List[int], max_cost) -> int:
