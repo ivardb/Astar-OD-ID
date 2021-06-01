@@ -29,8 +29,6 @@ class MapGenerator:
             count_traversable = 0
             for y in range(height):
                 count_traversable += width - sum(grid[y])
-            print(
-                f"count_traversable={count_traversable}, minimum: {open_factor * width * height * 0.25 * max_neighbors}")
             if count_traversable < (open_factor * width * height * 0.25 * max_neighbors) or self.__num_3neighbors(grid) < sum(
                     num_agents) - 1:
                 print("Not enough traversable cells or not solvable, running again!")
@@ -93,7 +91,7 @@ class MapGenerator:
         for x in range(sum(num_agents)):
             start_x = randint(0, width - 1)
             start_y = randint(0, height - 1)
-            while grid[start_y][start_x] != 0 and Coord(start_x, start_y) not in agent_positions:
+            while grid[start_y][start_x] != 0 or Coord(start_x, start_y) in agent_positions:
                 start_x = randint(0, width - 1)
                 start_y = randint(0, height - 1)
 
@@ -218,6 +216,6 @@ class MapGenerator:
 
 
 if __name__ == '__main__':
-    map_generator = MapGenerator("../../../maps")
-    for i in range(1, 11):
-        map_generator.generate_even_batch(50, 20, 20, i, 3, prefix="Open", min_goal_distance=0, open_factor=1, max_neighbors=4)
+    map_generator = MapGenerator("../../../maps/maps")
+    for i in range(1, 16):
+        map_generator.generate_even_batch(200, 20, 20, i, 3, prefix="Obstacle", min_goal_distance=0, open_factor=0.65, max_neighbors=3)
