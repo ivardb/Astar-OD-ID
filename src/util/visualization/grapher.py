@@ -5,6 +5,7 @@ from typing import List
 
 import numpy
 from matplotlib import pyplot as plt
+from matplotlib.ticker import MaxNLocator
 
 
 class DataTypes(Enum):
@@ -26,6 +27,20 @@ class DataTypes(Enum):
 class StatTypes(Enum):
     Completion = 1
     Mean = 2
+    Both = 3
+    TeamMean = 4
+    TeamCompletion = 5
+
+    def __str__(self):
+        if self.value == 1:
+            return "C"
+        if self.value == 2:
+            return "M"
+        if self.value == 3:
+            return "B"
+        if self.value == 4:
+            return "TM"
+        return "TC"
 
 
 class ResultLoader:
@@ -69,13 +84,19 @@ class ResultLoader:
                 if val is not None:
                     completed += 1
             filtered = list(filter(lambda x: x is not None, value))
-            mean = numpy.mean(filtered)
-            deviation = numpy.std(filtered)
+            if len(filtered) > 0:
+                mean = numpy.mean(filtered)
+                deviation = numpy.std(filtered)
+                completion = completed / total
+            else:
+                mean = float("nan")
+                deviation = float("nan")
+                completion = 0
             data.append((matches[0][0], int(matches[0][1]), int(matches[0][2]), int(matches[0][3]), int(matches[0][4]),
-                         completed / total, mean, deviation))
+                         completion, mean, deviation))
         return data
 
-    def filter(self, prefix=None, width=None, height=None, agents=None, teams=None):
+    def filter(self, prefix=None, width=None, height=None, agents=None, max_agents=None, teams=None):
         data = self.aggregated_data
         if prefix is not None:
             data = filter(lambda x: x[0] == prefix, data)
@@ -85,42 +106,148 @@ class ResultLoader:
             data = filter(lambda x: x[2] == height, data)
         if agents is not None:
             data = filter(lambda x: x[3] == agents, data)
+        if max_agents is not None:
+            data = filter(lambda x: x[3] <= max_agents, data)
         if teams is not None:
             data = filter(lambda x: x[4] == teams, data)
         return list(data)
 
 
-def comparison_plot(data1, data2, matching_type1, matching_type2, teams, num_agents, map_type, stat_type):
-    font = {'fontname': 'Consolas'}
-    fig, ax1 = plt.subplots()
-    fig.patch.set_facecolor('#D9D9D9')
+def double_plot(data, types, teams, map_type):
+    plt.rcParams["figure.figsize"] = (7, 5)
+    plt.margins(0, 0)
 
-    x = range(1, num_agents + 1)
+    fig, (percentage, times) = plt.subplots(2, 1, sharex='all')
+    plt.subplots_adjust(hspace=0.3)
+
+    percentage.set_title(f"% solved out of 200 {map_type} maps")
+    times.set_title(f"Average time needed for solved {map_type} maps")
+
+    percentage.xaxis.set_major_locator(MaxNLocator(integer=True))
+    percentage.set_ylabel("% solved")
+    times.xaxis.set_major_locator(MaxNLocator(integer=True))
+
+    times.set_xlabel(f'Number of agents spread over {teams} {"team" if teams == 1 else "teams"}')
+    times.set_ylabel("seconds")
+    percentage.set_ylim(0, 105)
+
+    for d, t in zip(data, types):
+        x = range(1, len(d) + 1)
+        percentage.plot(x, list(map(lambda l: l[5] * 100, d)), label=f'{t}')
+        times.plot(x, list(map(lambda l: l[6], d)), label=f'{t}')
+    plt.legend()
+    return plt
+
+
+def team_double_plot(data1, data3, types, map_type, stat_type):
+    plt.rcParams["figure.figsize"] = (7, 5)
+    plt.margins(0, 0)
+
+    fig, (team1, team3) = plt.subplots(2, 1)
+    plt.subplots_adjust(hspace=0.3)
+
+    if stat_type == StatTypes.TeamMean:
+        team1.set_title(f"Average time needed for solved {map_type} maps (1 team)")
+        team3.set_title(f"Average time needed for solved {map_type} maps (3 teams)")
+
+        team1.xaxis.set_major_locator(MaxNLocator(integer=True))
+        team1.set_ylabel("seconds")
+        team3.xaxis.set_major_locator(MaxNLocator(integer=True))
+
+        team3.set_xlabel(f'Number of agents')
+        team3.set_ylabel("seconds")
+
+        for (d1, d3), t in zip(zip(data1, data3), types):
+            team1.plot(range(1, len(d1) + 1), list(map(lambda l: l[6], d1)), label=f'{t}')
+            team3.plot(range(1, len(d3) + 1), list(map(lambda l: l[6], d3)), label=f'{t}')
+    else:
+        team1.set_title(f"% solved out of 200 {map_type} maps (1 team)")
+        team3.set_title(f"% solved out of 200 {map_type} maps (3 teams)")
+
+        team1.xaxis.set_major_locator(MaxNLocator(integer=True))
+        team1.set_ylabel("% solved")
+        team1.set_ylim(0, 105)
+        team3.xaxis.set_major_locator(MaxNLocator(integer=True))
+
+        team3.set_xlabel(f'Number of agents')
+        team3.set_ylabel("% solved")
+        team3.set_ylim(0, 105)
+
+        for (d1, d3), t in zip(zip(data1, data3), types):
+            team1.plot(range(1, len(d1) + 1), list(map(lambda l: l[5] * 100, d1)), label=f'{t}')
+            team3.plot(range(1, len(d3) + 1), list(map(lambda l: l[5] * 100, d3)), label=f'{t}')
+    plt.legend()
+    return plt
+
+
+def comparison_plot(data, types, teams, map_type, stat_type):
+    #plt.style.use('seaborn-whitegrid')
+    if stat_type == StatTypes.Both:
+        return double_plot(data, types, teams, map_type)
+    x = range(1, len(data[0]) + 1)
+    fig, ax1 = plt.subplots()
+    plt.xticks(list(range(1, len(data[0]) + 1)))
     ax1.set_xlabel(f'Number of agents spread over {teams} {"team" if teams == 1 else "teams"}')
     if stat_type == StatTypes.Completion:
-        plt.ylim([0, 1.01])
-        ax1.set_ylabel('Fraction of problems solved within 30 seconds')
-        ax1.plot(x, list(map(lambda d: d[5], data1)), label=f'{matching_type1}', color='#0000ff', linestyle='--')
-        ax1.plot(x, list(map(lambda d: d[5], data2)), label=f'{matching_type2}', color='#ff0000', linestyle='--')
+        plt.ylim([0, 101])
+        ax1.set_ylabel('% of problems solved within 2 minutes')
+        for d, t in zip(data, types):
+            ax1.plot(x, list(map(lambda d: d[5] * 100, d)), label=f'{t}')
         ax1.legend(loc=(0, 0.4))
+        #plt.title(f'Completion % within 2 minutes for {map_type} maps', font)
 
     elif stat_type == StatTypes.Mean:
-        ax1.set_ylabel('Average time needed to solve problems')
-        ax1.plot(x, list(map(lambda d: d[6], data1)), label=f'{matching_type1}', color='#0000ff', linestyle='--')
-        ax1.plot(x, list(map(lambda d: d[6], data2)), label=f'{matching_type2}', color='#ff0000', linestyle='--')
+        ax1.set_ylabel('Average time in seconds')
+        for d, t in zip(data, types):
+            ax1.plot(x, list(map(lambda d: d[6], d)), label=f'{t}')
         ax1.legend(loc=(0, 0.4))
+        #plt.title(f'Average runtime for solved {map_type} maps', font)
+    return plt
 
-    plt.title(f'{matching_type1} versus {matching_type2} for {map_type} maps', font)
 
+def compare(teams, agents, prefix, plot_type, save, *types):
+    loaders = [get_loader(type) for type in types]
+    data = [loader.filter(prefix=prefix, teams=teams, max_agents=agents) for loader in loaders]
+    plt = comparison_plot(data, types, teams, prefix, plot_type)
+    if save:
+        image_folder = "C:\\Users\\ivard\\Documents\\Uni\\CSE-3\\CSE3000 - Research Project\\Docs\\Research paper\\images"
+        alg_name = ''.join(map(str, sorted(map(lambda l: l.value, types))))
+        image_name = f"{alg_name}-{plot_type}-{prefix}{teams}.png"
+        path = os.path.join(image_folder, image_name)
+        plt.savefig(path, bbox_inches='tight', pad_inches=0.1)
+        print(path)
     plt.show()
 
 
-def compare(type1, type2, teams, agents, prefix, plot_type):
-    loader1 = get_loader(type1)
-    loader2 = get_loader(type2)
-    data1 = loader1.filter(prefix=prefix, teams=teams)
-    data2 = loader2.filter(prefix=prefix, teams=teams)
-    comparison_plot(data1, data2, type1, type2, teams, agents, prefix, plot_type)
+def team_compare(agents, prefix, plot_type, save, *types):
+    loaders = [get_loader(type) for type in types]
+    print(loaders[0].filter(prefix="Progressive"))
+    data1 = [loader.filter(prefix=prefix, teams=1, max_agents=agents) for loader in loaders]
+    data3 = [loader.filter(prefix=prefix, teams=3, max_agents=agents) for loader in loaders]
+    plt = team_double_plot(data1, data3, types, prefix, plot_type)
+    if save:
+        image_folder = "C:\\Users\\ivard\\Documents\\Uni\\CSE-3\\CSE3000 - Research Project\\Docs\\Research paper\\images"
+        alg_name = ''.join(map(str, sorted(map(lambda l: l.value, types))))
+        image_name = f"{alg_name}-{plot_type}-{prefix}.png"
+        path = os.path.join(image_folder, image_name)
+        plt.savefig(path, bbox_inches='tight', pad_inches=0.1)
+        print(path)
+    plt.show()
+
+
+def plot_progressive(*types):
+    loaders = [get_loader(type) for type in types]
+    data = [loader.filter(prefix="Progressive") for loader in loaders]
+
+    x = range(1, len(data[0]) + 1)
+    fig, ax1 = plt.subplots()
+    plt.xticks(list(range(1, len(data[0]) + 1)))
+    ax1.set_ylabel('Average time in seconds')
+    ax1.set_xlabel("Number of teams")
+    for d, t in zip(data, types):
+        ax1.plot(x, list(map(lambda l: l[6], sorted(d, key=lambda l: l[4]))), label=f'{t}')
+    ax1.legend(loc=(0, 0.4))
+    plt.show()
 
 
 def get_loader(plot_type):
@@ -134,4 +261,6 @@ def get_loader(plot_type):
 
 
 if __name__ == '__main__':
-    compare(DataTypes.ExhaustiveIdSort, DataTypes.ExhaustiveNoIdNoSort, 3, 8, "Obstacle", StatTypes.Mean)
+    #compare(1, 8, "Obstacle", StatTypes.Both, False, DataTypes.ExhaustiveIdNoSort, DataTypes.ExhaustiveIdSort)
+    #team_compare(13, "Progressive", StatTypes.TeamCompletion, False, DataTypes.ExhaustiveNoIdNoSort, DataTypes.ExhaustiveIdNoSort)
+    plot_progressive(DataTypes.ExhaustiveNoIdNoSort, DataTypes.ExhaustiveIdNoSort, DataTypes.ExhaustiveIdSort)
