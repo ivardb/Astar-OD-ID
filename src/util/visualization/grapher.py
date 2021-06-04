@@ -107,7 +107,7 @@ class ResultLoader:
         if agents is not None:
             data = filter(lambda x: x[3] == agents, data)
         if max_agents is not None:
-            data = filter(lambda x: x[3] <= max_agents, data)
+            data = sorted(filter(lambda x: x[3] <= max_agents, data), key=lambda x: x[3])
         if teams is not None:
             data = filter(lambda x: x[4] == teams, data)
         return list(data)
@@ -117,7 +117,7 @@ def double_plot(data, types, teams, map_type):
     plt.rcParams["figure.figsize"] = (7, 5)
     plt.margins(0, 0)
 
-    fig, (percentage, times) = plt.subplots(2, 1, sharex='all')
+    fig, (percentage, times) = plt.subplots(2, 1)
     plt.subplots_adjust(hspace=0.3)
 
     percentage.set_title(f"% solved out of 200 {map_type} maps")
@@ -205,37 +205,36 @@ def comparison_plot(data, types, teams, map_type, stat_type):
     return plt
 
 
+def save_plot(plt, name):
+    image_folder = "C:\\Users\\ivard\\Documents\\Uni\\CSE-3\\CSE3000 - Research Project\\Docs\\Research paper\\images"
+    path = os.path.join(image_folder, name)
+    plt.savefig(path, bbox_inches='tight', pad_inches=0.1)
+
+
 def compare(teams, agents, prefix, plot_type, save, *types):
     loaders = [get_loader(type) for type in types]
     data = [loader.filter(prefix=prefix, teams=teams, max_agents=agents) for loader in loaders]
     plt = comparison_plot(data, types, teams, prefix, plot_type)
     if save:
-        image_folder = "C:\\Users\\ivard\\Documents\\Uni\\CSE-3\\CSE3000 - Research Project\\Docs\\Research paper\\images"
         alg_name = ''.join(map(str, sorted(map(lambda l: l.value, types))))
         image_name = f"{alg_name}-{plot_type}-{prefix}{teams}.png"
-        path = os.path.join(image_folder, image_name)
-        plt.savefig(path, bbox_inches='tight', pad_inches=0.1)
-        print(path)
+        save_plot(plt, image_name)
     plt.show()
 
 
-def team_compare(agents, prefix, plot_type, save, *types):
+def team_compare(agents1, agents3, prefix, plot_type, save, *types):
     loaders = [get_loader(type) for type in types]
-    print(loaders[0].filter(prefix="Progressive"))
-    data1 = [loader.filter(prefix=prefix, teams=1, max_agents=agents) for loader in loaders]
-    data3 = [loader.filter(prefix=prefix, teams=3, max_agents=agents) for loader in loaders]
+    data1 = [loader.filter(prefix=prefix, teams=1, max_agents=agents1) for loader in loaders]
+    data3 = [loader.filter(prefix=prefix, teams=3, max_agents=agents3) for loader in loaders]
     plt = team_double_plot(data1, data3, types, prefix, plot_type)
     if save:
-        image_folder = "C:\\Users\\ivard\\Documents\\Uni\\CSE-3\\CSE3000 - Research Project\\Docs\\Research paper\\images"
         alg_name = ''.join(map(str, sorted(map(lambda l: l.value, types))))
         image_name = f"{alg_name}-{plot_type}-{prefix}.png"
-        path = os.path.join(image_folder, image_name)
-        plt.savefig(path, bbox_inches='tight', pad_inches=0.1)
-        print(path)
+        save_plot(plt, image_name)
     plt.show()
 
 
-def plot_progressive(*types):
+def plot_progressive(save, *types):
     loaders = [get_loader(type) for type in types]
     data = [loader.filter(prefix="Progressive") for loader in loaders]
 
@@ -247,6 +246,10 @@ def plot_progressive(*types):
     for d, t in zip(data, types):
         ax1.plot(x, list(map(lambda l: l[6], sorted(d, key=lambda l: l[4]))), label=f'{t}')
     ax1.legend(loc=(0, 0.4))
+    if save:
+        alg_name = ''.join(map(str, sorted(map(lambda l: l.value, types))))
+        image_name = f"{alg_name}-M-Progressive.png"
+        save_plot(plt, image_name)
     plt.show()
 
 
@@ -261,6 +264,6 @@ def get_loader(plot_type):
 
 
 if __name__ == '__main__':
-    #compare(1, 8, "Obstacle", StatTypes.Both, False, DataTypes.ExhaustiveIdNoSort, DataTypes.ExhaustiveIdSort)
-    #team_compare(13, "Progressive", StatTypes.TeamCompletion, False, DataTypes.ExhaustiveNoIdNoSort, DataTypes.ExhaustiveIdNoSort)
-    plot_progressive(DataTypes.ExhaustiveNoIdNoSort, DataTypes.ExhaustiveIdNoSort, DataTypes.ExhaustiveIdSort)
+    #compare(3, 13, "Obstacle", StatTypes.Both, False, DataTypes.ExhaustiveNoIdNoSort, DataTypes.ExhaustiveIdNoSort)
+    #team_compare(8, 13, "Maze", StatTypes.TeamMean, False, DataTypes.ExhaustiveNoIdNoSort, DataTypes.ExhaustiveIdNoSort)
+    plot_progressive(False, DataTypes.ExhaustiveNoIdNoSort, DataTypes.ExhaustiveIdNoSort, DataTypes.ExhaustiveIdSort)

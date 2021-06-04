@@ -29,7 +29,8 @@ class MapGenerator:
             count_traversable = 0
             for y in range(height):
                 count_traversable += width - sum(grid[y])
-            if count_traversable < (open_factor * width * height * 0.25 * max_neighbors) or self.__num_3neighbors(grid) < sum(
+            if count_traversable < (open_factor * width * height * 0.25 * max_neighbors) or self.__num_3neighbors(
+                    grid) < sum(
                     num_agents) - 1:
                 print("Not enough traversable cells or not solvable, running again!")
             else:
@@ -37,7 +38,8 @@ class MapGenerator:
                 while result is None:
                     try:
                         # connect
-                        result = self.__generate_agent_positions(grid, width, height, num_agents, min_goal_distance, max_goal_distance)
+                        result = self.__generate_agent_positions(grid, width, height, num_agents, min_goal_distance,
+                                                                 max_goal_distance)
                     except:
                         pass
                 starts, goals = result
@@ -59,15 +61,16 @@ class MapGenerator:
                           max_neighbors: int = 1,
                           min_goal_distance: float = 0.5,
                           max_goal_distance: float = 1):
-        problem = self.generate_map(width, height, num_agents, open_factor, max_neighbors, min_goal_distance, max_goal_distance)
-        self.__store_map(name, problem)
+        problem = self.generate_map(width, height, num_agents, open_factor, max_neighbors, min_goal_distance,
+                                    max_goal_distance)
+        self.store_map(name, problem)
 
     def generate_even_batch(self, amount: int, width: int, height: int, agents: int, teams: int,
                             prefix="", package_name: str = None, file_name: str = None, open_factor: float = 0.75,
                             max_neighbors: int = 1, min_goal_distance: float = 0.5, max_goal_distance: float = 1):
         package_name = package_name if package_name is not None else f"{prefix}-{width}x{height}-A{agents}_T{teams}"
         file_name = package_name if file_name is None else file_name
-        min_team_count = int(agents/teams)
+        min_team_count = int(agents / teams)
         diff = agents - (min_team_count * teams)
         num_agents = [min_team_count for _ in range(teams)]
         os.mkdir(os.path.join(self.map_root, package_name))
@@ -79,7 +82,8 @@ class MapGenerator:
             if int(i) < 100 < amount:
                 i = f"0{i}"
             name = os.path.join(package_name, f"{file_name}-{i}")
-            self.generate_map_file(name, width, height, num_agents, open_factor, max_neighbors, min_goal_distance, max_goal_distance)
+            self.generate_map_file(name, width, height, num_agents, open_factor, max_neighbors, min_goal_distance,
+                                   max_goal_distance)
 
     def __generate_agent_positions(self, grid, width, height, num_agents: List[int],
                                    min_distance: float,
@@ -194,7 +198,7 @@ class MapGenerator:
                             frontier.append(Coord(new_x, new_y))
         return grid
 
-    def __store_map(self, name: str, problem: Problem):
+    def store_map(self, name: str, problem: Problem):
         file_path = os.path.join(self.map_root, name + ".map")
         with open(file_path, 'w') as f:
             f.write(f'width {problem.width}\n')
@@ -215,7 +219,33 @@ class MapGenerator:
                 f.write(f'{goal.x} {goal.y} {goal.color}\n')
 
 
+def progressive(grid, scen_path, num_agents, num_teams):
+    with open(scen_path) as f:
+        scen_text = f.readlines()
+    starts = []
+    goals = []
+    for i, row in enumerate(scen_text[1:num_agents + 1]):
+        fields = row.split()
+        starts.append(MarkedLocation(i % num_teams, int(fields[4]), int(fields[5])))
+        goals.append(MarkedLocation(i % num_teams, int(fields[6]), int(fields[7])))
+    return Problem(grid, len(grid[0]), len(grid), starts, goals)
+
+
+def load_map(map_path):
+    with open(map_path) as f:
+        map_text = f.readlines()
+    return [[0 if c == '.' else 1 for c in row.strip()] for row in map_text[4:] if row.strip() != ""]
+
+
 if __name__ == '__main__':
-    map_generator = MapGenerator("../../../maps/maps")
-    for i in range(1, 16):
-        map_generator.generate_even_batch(200, 20, 20, i, 3, prefix="Obstacle", min_goal_distance=0, open_factor=0.65, max_neighbors=3)
+    map_path = "C:/Users/ivard/Documents/Uni/CSE-3/CSE3000 - Research Project/Server/mapf-server/assets/maps/Berlin_1_256.map"
+    grid = load_map(map_path)
+
+    for t in range(2, 21):
+        map_generator = MapGenerator(f"../../../maps/progressive/Progressive-256x256-A20_T{t}/")
+        for s in range(1, 26):
+            scen_path = f"C:/Users/ivard/Documents/Uni/CSE-3/CSE3000 - Research Project/Server/mapf-server/assets/scenarios/even/Berlin_1_256-even-{'0' if s < 10 else ''}{s}.scen"
+            problem = progressive(grid, scen_path, 20, t)
+            map_generator.store_map(f"Progressive-{problem.width}x{problem.height}-A20_T{t}-{'0' if s < 10 else ''}{s}", problem)
+    # for i in range(1, 16):
+    #    map_generator.generate_even_batch(200, 20, 20, i, 3, prefix="Obstacle", min_goal_distance=0, open_factor=0.65, max_neighbors=3)

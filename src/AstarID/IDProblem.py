@@ -67,10 +67,6 @@ class IDProblem:
                 goal_ids.append(ids)
             self.assigned_goals = filter(lambda x: len(x) == len(set(x)), itertools.product(*goal_ids))
             if enable_sorting:
-                assigned_goals = list(self.assigned_goals)
-                if 0.5 * len(assigned_goals) > pq_size:
-                    random.shuffle(assigned_goals)
-                self.assigned_goals = iter(assigned_goals)
                 self.goal_pq = []
 
     def get_next_goal(self, maximum):

@@ -125,9 +125,9 @@ def solve_no_id(starting_problem: Problem, heuristic_type, enable_sorting):
 if __name__ == "__main__":
     enable_id = True
     enable_sorting = True
-    processes = 4
-    map_root = "../../../maps"
+    processes = 10
+    map_root = "../../../maps/progressive"
     result_root = "../../../results"
     queue = BenchmarkQueue("queue.txt")
     runner = MapRunner(map_root, HeuristicType.Exhaustive)
-    runner.test_queue(30, queue, os.path.join(result_root, "test.txt"))
+    runner.test_queue(120, queue, os.path.join(result_root, "test.txt"))
