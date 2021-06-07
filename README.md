@@ -1,3 +1,7 @@
+This code based was used to research extending A*-ID-OD with matching.
+The paper for this can be found here: TODO
+Version TODO was used for this paper.
+
 # MAPFM - A* - ID OD
 A*-ID-OD for matching is an extension of A*-ID-OD made to solve Multi-Agent Path Finding problems with matching.
 This implementation was made for the purpose of comparing it to other algorithms that try and solve the same problem,
@@ -30,6 +34,7 @@ A few matching options have been implemented
 - Heuristic Matching
 - Exhaustive Matching
 - Exhaustive Matching with ID
+- Exhaustive Matching with ID and Sorting
 
 All options are both complete and optimal.
 Of these heuristic matching performs by far the worst. 
@@ -44,3 +49,12 @@ For this we create all matchings and then prune by calculating the maximum cost 
 ### Exhaustive Matching with ID
 For this we observe that teams have independent matchings if their best matching causes no conflicts with any other group.
 This allows us to generate a lot less options.
+
+### Exhaustive Matching with ID and Sorting
+Sorting is an idea proposed by Jaap de Jong where we use a priority queue to sort the matches based on their initial heuristic.
+This allows for much faster pruning in some cases.
+
+# Map Generation
+For the paper two types of random maps where generated as can be found in src/util/map_generation/map_generation.py.
+- Mazes: generated with min-distance = 0 and otherwise default parameters.
+- Obstacles: generated with min-distance = 0, max-neighbours = 3, open-factor = 0.65 and otherwise default parameters.
