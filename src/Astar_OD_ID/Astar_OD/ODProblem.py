@@ -1,9 +1,9 @@
 from typing import Tuple, Iterable, List
 
 from Astar_OD_ID.Astar_OD.ODState import ODState
-from src.util.agent_path import AgentPath
 from src.util.CAT import CAT
 from src.util.agent import Agent
+from src.util.agent_path import AgentPath
 from src.util.coord import Coord
 from src.util.grid import Grid
 from src.util.group import Group
@@ -11,7 +11,8 @@ from src.util.group import Group
 
 class ODProblem:
 
-    def __init__(self, grid: Grid, group: Group, cats: List[CAT], illegal_moves: List[AgentPath] = None, assigned_goals: dict = None):
+    def __init__(self, grid: Grid, group: Group, cats: List[CAT], illegal_moves: List[AgentPath] = None,
+                 assigned_goals: dict = None):
         """
         Creates a problem to be solved by the A*+OD solver
         :param grid: The grid with walls as well as the starting positions and end positions

@@ -15,7 +15,7 @@ class HeuristicType(Enum):
 
 class Grid:
 
-    def __init__(self, grid: List[List[int]], width: int, height: int,  starts: List[MarkedLocation],
+    def __init__(self, grid: List[List[int]], width: int, height: int, starts: List[MarkedLocation],
                  goals: List[MarkedLocation], heuristic_type: HeuristicType):
         """
         Create a grid

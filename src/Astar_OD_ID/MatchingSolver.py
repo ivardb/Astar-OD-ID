@@ -3,8 +3,8 @@ from typing import Optional, List, Iterator, Tuple
 from mapfmclient import Problem, Solution
 
 from Astar_OD_ID.Astar_ID.IDProblem import IDProblem
-from src.util.agent_path import AgentPath
 from src.util.CAT import CAT
+from src.util.agent_path import AgentPath
 from src.util.grid import HeuristicType, Grid
 from src.util.group import Group
 from src.util.groups import Groups
@@ -15,7 +15,8 @@ logger = Logger("MatchingSolver")
 
 class MatchingSolver:
 
-    def __init__(self, problem: Problem, heuristic_type: HeuristicType = HeuristicType.Exhaustive, enable_sorting=False, enable_matchingID=False):
+    def __init__(self, problem: Problem, heuristic_type: HeuristicType = HeuristicType.Exhaustive, enable_sorting=False,
+                 enable_matchingID=False):
         """
         Create a problem that uses matching ID, only makes sense for Exhaustive matching.
         :param problem: The problem to solve.
@@ -40,7 +41,8 @@ class MatchingSolver:
         :return: A solution if it exists.
         """
         if not self.enable_matchingID:
-            id_problem = IDProblem(self.grid, self.heuristic_type, Group(list(range(len(self.grid.starts)))), enable_sorting=self.enable_sorting)
+            id_problem = IDProblem(self.grid, self.heuristic_type, Group(list(range(len(self.grid.starts)))),
+                                   enable_sorting=self.enable_sorting)
             paths = id_problem.solve()
             if paths is None:
                 return None

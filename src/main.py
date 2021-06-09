@@ -1,18 +1,16 @@
 import subprocess
 
-from mapfmclient import Problem, Solution, MapfBenchmarker, BenchmarkDescriptor, ProgressiveDescriptor
+from mapfmclient import Problem, MapfBenchmarker, BenchmarkDescriptor, ProgressiveDescriptor
 
-from Astar_OD_ID.Astar_ID.IDProblem import IDProblem
 from Astar_OD_ID.MatchingSolver import MatchingSolver
-from src.util.agent_path import AgentPath
-from src.util.grid import HeuristicType, Grid
-from src.util.group import Group
+from src.util.grid import HeuristicType
 from src.util.logger.logger import Logger
 
 
 def solve(starting_problem: Problem):
     print()
-    problem = MatchingSolver(starting_problem, heuristic_type, enable_sorting=enable_sorting, enable_matchingID=enable_id)
+    problem = MatchingSolver(starting_problem, heuristic_type, enable_sorting=enable_sorting,
+                             enable_matchingID=enable_id)
     solution = problem.solve(enable_cat=enable_cat)
     if solution is None:
         print("Failed to find solution")
@@ -37,7 +35,7 @@ def get_name() -> str:
 def run_benchmark():
     api_token = open("../apitoken.txt", "r").read().strip()
     benchmark = MapfBenchmarker(api_token, descriptor,
-                                  get_name(), get_version(), debug, solver=solve, cores=1)
+                                get_name(), get_version(), debug, solver=solve, cores=1)
     benchmark.run()
 
 

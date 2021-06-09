@@ -1,4 +1,3 @@
-import random
 from heapq import heappush, heappop
 from typing import Optional, List
 
@@ -6,14 +5,14 @@ import itertools
 
 from Astar_OD_ID.Astar_OD.ODProblem import ODProblem
 from Astar_OD_ID.Astar_OD.ODSolver import ODSolver
-from src.util.agent_path import AgentPath
 from src.util.CAT import CAT
-from src.util.path_set import PathSet
+from src.util.agent_path import AgentPath
 from src.util.coord import Coord
 from src.util.grid import Grid, HeuristicType
 from src.util.group import Group
 from src.util.groups import Groups
 from src.util.logger.logger import Logger
+from src.util.path_set import PathSet
 
 logger = Logger("IDProblem")
 

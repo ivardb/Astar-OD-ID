@@ -89,7 +89,9 @@ class ODSolver:
             popped += 1
             current = heappop(frontier)
             if popped % 100000 == 0:
-                logger.log(f"Count: {popped}, Heuristic: {current.heuristic}, Cost: {current.cost}, F: {current.cost + current.heuristic}, Frontier size: {len(frontier)}, Max: {self.max_cost}")
+                logger.log(f"Count: {popped}, Heuristic: {current.heuristic}, Cost: {current.cost}, "
+                           f"F: {current.cost + current.heuristic}, Frontier size: {len(frontier)}, "
+                           f"Max: {self.max_cost}")
             if self.problem.is_final(current.state):
                 return current.get_path()
             if current.state.is_standard():
@@ -102,7 +104,8 @@ class ODSolver:
                     cost = current.cost + cost_increase
                     heuristic = self.problem.heuristic(state)
                     if cost + heuristic <= self.max_cost:
-                        node = Node(current.time_step + 1, state, cost, heuristic, current.conflicts + conflicts, current)
+                        node = Node(current.time_step + 1, state, cost, heuristic, current.conflicts + conflicts,
+                                    current)
                         heappush(frontier, node)
         return None
 
@@ -126,4 +129,3 @@ class ODSolver:
                 print(symbol, end='')
             print()
         print()
-

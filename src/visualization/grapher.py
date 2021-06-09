@@ -3,7 +3,6 @@ import re
 from enum import Enum
 from typing import List
 
-import matplotlib.colors
 import numpy
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -195,7 +194,7 @@ def team_double_plot(data1, data3, types, map_type, stat_type):
 
 
 def comparison_plot(data, types, teams, map_type, stat_type):
-    #plt.style.use('seaborn-whitegrid')
+    # plt.style.use('seaborn-whitegrid')
     if stat_type == StatTypes.Both:
         return double_plot(data, types, teams, map_type)
     x = range(1, len(data[0]) + 1)
@@ -208,14 +207,14 @@ def comparison_plot(data, types, teams, map_type, stat_type):
         for d, t in zip(data, types):
             ax1.plot(x, list(map(lambda d: d[5] * 100, d)), label=f'{t}', color=t.get_color())
         ax1.legend(loc=(0, 0.4))
-        #plt.title(f'Completion % within 2 minutes for {map_type} maps', font)
+        # plt.title(f'Completion % within 2 minutes for {map_type} maps', font)
 
     elif stat_type == StatTypes.Mean:
         ax1.set_ylabel('Average time in seconds')
         for d, t in zip(data, types):
             ax1.plot(x, list(map(lambda d: d[6], d)), label=f'{t}', color=t.get_color())
         ax1.legend(loc=(0, 0.4))
-        #plt.title(f'Average runtime for solved {map_type} maps', font)
+        # plt.title(f'Average runtime for solved {map_type} maps', font)
     return plt
 
 
@@ -253,7 +252,7 @@ def plot_progressive(save, *types):
     data = [loader.filter(prefix="Progressive") for loader in loaders]
 
     x = range(1, len(data[0]) + 1)
-    plt.rcParams["figure.figsize"] = (7,5.33)
+    plt.rcParams["figure.figsize"] = (7, 5.33)
     plt.margins(0, 0)
     fig, ax1 = plt.subplots()
     plt.title("Runtime on Berlin_1_256 for varying team numbers with 20 agents total")
@@ -282,5 +281,5 @@ def get_loader(plot_type):
 
 if __name__ == '__main__':
     compare(1, 20, "Maze", StatTypes.Both, False, DataTypes.ExhaustiveIdSort)
-    #team_compare(8, 13, "Maze", StatTypes.TeamMean, True, DataTypes.ExhaustiveIdNoSort, DataTypes.ExhaustiveIdSort)
-    #plot_progressive(True, DataTypes.ExhaustiveNoIdNoSort, DataTypes.ExhaustiveIdNoSort, DataTypes.ExhaustiveIdSort)
+    # team_compare(8, 13, "Maze", StatTypes.TeamMean, True, DataTypes.ExhaustiveIdNoSort, DataTypes.ExhaustiveIdSort)
+    # plot_progressive(True, DataTypes.ExhaustiveNoIdNoSort, DataTypes.ExhaustiveIdNoSort, DataTypes.ExhaustiveIdSort)

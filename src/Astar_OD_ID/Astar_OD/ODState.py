@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from typing import Tuple, Optional, Iterator, List
 
-from src.util.agent_path import AgentPath
 from src.util.agent import Agent
+from src.util.agent_path import AgentPath
 
 
 class ODState:
-    __slots__ = ("agents", "new_agents", "accumulated_cost", "new_accumulated_cost", "illegal_size", "construction_cost")
+    __slots__ = (
+    "agents", "new_agents", "accumulated_cost", "new_accumulated_cost", "illegal_size", "construction_cost")
 
     def __init__(self, agents: Iterator[Agent], new_agents: Optional[Iterator[Agent]] = None,
                  accumulated_cost: Optional[Iterator[int]] = None, new_accumulated_cost: Optional[Iterator[int]] = None,
@@ -50,7 +51,9 @@ class ODState:
         # If we have a standard state make the predetermined/illegal moves,
         # this way the valid_next method will automatically check for conflicts
         if len(self.new_agents) == 0 and illegal_moves_set is not None and time_step is not None:
-            self.new_agents = tuple(Agent(illegal_moves.agent_id, get_illegal(illegal_moves), illegal_moves.color) for illegal_moves in illegal_moves_set)
+            self.new_agents = tuple(
+                Agent(illegal_moves.agent_id, get_illegal(illegal_moves), illegal_moves.color) for illegal_moves in
+                illegal_moves_set)
             self.illegal_size = len(self.new_agents)
 
             # Calculate the cost of the predetermined moves
@@ -89,7 +92,8 @@ class ODState:
         new_agents.append(agent)
         new_acc_cost = list(self.new_accumulated_cost)
         new_acc_cost.append(acc_cost)
-        state = ODState(self.agents, new_agents, self.accumulated_cost, new_acc_cost, illegal_moves_set=illegal_moves_set, time_step=time_step)
+        state = ODState(self.agents, new_agents, self.accumulated_cost, new_acc_cost,
+                        illegal_moves_set=illegal_moves_set, time_step=time_step)
         return state, state.construction_cost
 
     def valid_next(self, new_agent: Agent) -> bool:

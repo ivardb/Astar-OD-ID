@@ -29,9 +29,8 @@ class MapGenerator:
             count_traversable = 0
             for y in range(height):
                 count_traversable += width - sum(grid[y])
-            if count_traversable < (open_factor * width * height * 0.25 * max_neighbors) or self.__num_3neighbors(
-                    grid) < sum(
-                    num_agents) - 1:
+            if count_traversable < (open_factor * width * height * 0.25 * max_neighbors) \
+                    or self.__num_3neighbors(grid) < sum(num_agents) - 1:
                 print("Not enough traversable cells or not solvable, running again!")
             else:
                 result = None
@@ -249,4 +248,4 @@ if __name__ == '__main__':
     #         map_generator.store_map(f"Progressive-{problem.width}x{problem.height}-A20_T{t}-{'0' if s < 10 else ''}{s}", problem)
     map_generator = MapGenerator(f"../../../maps/additional")
     for i in range(11, 16):
-       map_generator.generate_even_batch(200, 20, 20, i, 3, prefix="Maze", min_goal_distance=0)
+        map_generator.generate_even_batch(200, 20, 20, i, 3, prefix="Maze", min_goal_distance=0)

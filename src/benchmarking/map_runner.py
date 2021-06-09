@@ -6,12 +6,9 @@ import time
 from func_timeout import func_timeout, FunctionTimedOut
 from mapfmclient import Problem, Solution
 
-from Astar_OD_ID.Astar_ID.IDProblem import IDProblem
 from Astar_OD_ID.MatchingSolver import MatchingSolver
-from src.util.agent_path import AgentPath
-from src.util.grid import HeuristicType, Grid
-from src.util.group import Group
 from benchmarking.map_parser import MapParser
+from src.util.grid import HeuristicType
 
 
 class BenchmarkQueue:
@@ -98,7 +95,8 @@ def timeout(current_problem: Problem, time_out, heuristic_type, enable_id, enabl
 
 def solve(starting_problem: Problem, heuristic_type, enable_id, enable_sorting):
     print()
-    problem = MatchingSolver(starting_problem, heuristic_type, enable_sorting=enable_sorting, enable_matchingID=enable_id)
+    problem = MatchingSolver(starting_problem, heuristic_type, enable_sorting=enable_sorting,
+                             enable_matchingID=enable_id)
     solution = problem.solve()
     if solution is None:
         print("Failed to find solution")
