@@ -49,6 +49,7 @@ class MapParser:
 
 
 if __name__ == "__main__":
-    parser = MapParser("../../../maps")
-    problems = parser.parse_batch("test2")
-    print(problems)
+    parser = MapParser("../../../maps/maps")
+    problems = parser.parse_batch("Obstacle-20x20-A6_T3")
+    average = [sum((sum(row) for row in problem.grid))/(problem.width * problem.height) * 100 for name, problem in problems]
+    print(sum(average)/len(average))

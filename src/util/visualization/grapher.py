@@ -3,6 +3,7 @@ import re
 from enum import Enum
 from typing import List
 
+import matplotlib.colors
 import numpy
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -22,6 +23,15 @@ class DataTypes(Enum):
         if self.value == 3:
             return "Exhaustive + ID"
         return "Sorted Exhaustive + ID"
+
+    def get_color(self):
+        if self.value == 1:
+            return "tab:red"
+        if self.value == 2:
+            return "tab:green"
+        if self.value == 3:
+            return "tab:orange"
+        return "tab:blue"
 
 
 class StatTypes(Enum):
@@ -133,8 +143,8 @@ def double_plot(data, types, teams, map_type):
 
     for d, t in zip(data, types):
         x = range(1, len(d) + 1)
-        percentage.plot(x, list(map(lambda l: l[5] * 100, d)), label=f'{t}')
-        times.plot(x, list(map(lambda l: l[6], d)), label=f'{t}')
+        percentage.plot(x, list(map(lambda l: l[5] * 100, d)), label=f'{t}', color=t.get_color())
+        times.plot(x, list(map(lambda l: l[6], d)), label=f'{t}', color=t.get_color())
     plt.legend()
     return plt
 
@@ -151,6 +161,8 @@ def team_double_plot(data1, data3, types, map_type, stat_type):
         team3.set_title(f"Average time needed for solved {map_type} maps (3 teams)")
 
         team1.xaxis.set_major_locator(MaxNLocator(integer=True))
+        team1.yaxis.set_major_locator(MaxNLocator(integer=True))
+        team3.yaxis.set_major_locator(MaxNLocator(integer=True))
         team1.set_ylabel("seconds")
         team3.xaxis.set_major_locator(MaxNLocator(integer=True))
 
@@ -158,13 +170,15 @@ def team_double_plot(data1, data3, types, map_type, stat_type):
         team3.set_ylabel("seconds")
 
         for (d1, d3), t in zip(zip(data1, data3), types):
-            team1.plot(range(1, len(d1) + 1), list(map(lambda l: l[6], d1)), label=f'{t}')
-            team3.plot(range(1, len(d3) + 1), list(map(lambda l: l[6], d3)), label=f'{t}')
+            team1.plot(range(1, len(d1) + 1), list(map(lambda l: l[6], d1)), label=f'{t}', color=t.get_color())
+            team3.plot(range(1, len(d3) + 1), list(map(lambda l: l[6], d3)), label=f'{t}', color=t.get_color())
     else:
         team1.set_title(f"% solved out of 200 {map_type} maps (1 team)")
         team3.set_title(f"% solved out of 200 {map_type} maps (3 teams)")
 
         team1.xaxis.set_major_locator(MaxNLocator(integer=True))
+        team1.yaxis.set_major_locator(MaxNLocator(integer=True))
+        team3.yaxis.set_major_locator(MaxNLocator(integer=True))
         team1.set_ylabel("% solved")
         team1.set_ylim(0, 105)
         team3.xaxis.set_major_locator(MaxNLocator(integer=True))
@@ -174,8 +188,8 @@ def team_double_plot(data1, data3, types, map_type, stat_type):
         team3.set_ylim(0, 105)
 
         for (d1, d3), t in zip(zip(data1, data3), types):
-            team1.plot(range(1, len(d1) + 1), list(map(lambda l: l[5] * 100, d1)), label=f'{t}')
-            team3.plot(range(1, len(d3) + 1), list(map(lambda l: l[5] * 100, d3)), label=f'{t}')
+            team1.plot(range(1, len(d1) + 1), list(map(lambda l: l[5] * 100, d1)), label=f'{t}', color=t.get_color())
+            team3.plot(range(1, len(d3) + 1), list(map(lambda l: l[5] * 100, d3)), label=f'{t}', color=t.get_color())
     plt.legend()
     return plt
 
@@ -192,14 +206,14 @@ def comparison_plot(data, types, teams, map_type, stat_type):
         plt.ylim([0, 101])
         ax1.set_ylabel('% of problems solved within 2 minutes')
         for d, t in zip(data, types):
-            ax1.plot(x, list(map(lambda d: d[5] * 100, d)), label=f'{t}')
+            ax1.plot(x, list(map(lambda d: d[5] * 100, d)), label=f'{t}', color=t.get_color())
         ax1.legend(loc=(0, 0.4))
         #plt.title(f'Completion % within 2 minutes for {map_type} maps', font)
 
     elif stat_type == StatTypes.Mean:
         ax1.set_ylabel('Average time in seconds')
         for d, t in zip(data, types):
-            ax1.plot(x, list(map(lambda d: d[6], d)), label=f'{t}')
+            ax1.plot(x, list(map(lambda d: d[6], d)), label=f'{t}', color=t.get_color())
         ax1.legend(loc=(0, 0.4))
         #plt.title(f'Average runtime for solved {map_type} maps', font)
     return plt
@@ -239,13 +253,16 @@ def plot_progressive(save, *types):
     data = [loader.filter(prefix="Progressive") for loader in loaders]
 
     x = range(1, len(data[0]) + 1)
+    plt.rcParams["figure.figsize"] = (7,5.33)
+    plt.margins(0, 0)
     fig, ax1 = plt.subplots()
+    plt.title("Runtime on Berlin_1_256 for varying team numbers with 20 agents total")
     plt.xticks(list(range(1, len(data[0]) + 1)))
     ax1.set_ylabel('Average time in seconds')
     ax1.set_xlabel("Number of teams")
     for d, t in zip(data, types):
-        ax1.plot(x, list(map(lambda l: l[6], sorted(d, key=lambda l: l[4]))), label=f'{t}')
-    ax1.legend(loc=(0, 0.4))
+        ax1.plot(x, list(map(lambda l: l[6], sorted(d, key=lambda l: l[4]))), label=f'{t}', color=t.get_color())
+    ax1.legend()
     if save:
         alg_name = ''.join(map(str, sorted(map(lambda l: l.value, types))))
         image_name = f"{alg_name}-M-Progressive.png"
@@ -264,6 +281,6 @@ def get_loader(plot_type):
 
 
 if __name__ == '__main__':
-    #compare(3, 13, "Obstacle", StatTypes.Both, False, DataTypes.ExhaustiveNoIdNoSort, DataTypes.ExhaustiveIdNoSort)
-    #team_compare(8, 13, "Maze", StatTypes.TeamMean, False, DataTypes.ExhaustiveNoIdNoSort, DataTypes.ExhaustiveIdNoSort)
-    plot_progressive(False, DataTypes.ExhaustiveNoIdNoSort, DataTypes.ExhaustiveIdNoSort, DataTypes.ExhaustiveIdSort)
+    compare(1, 20, "Maze", StatTypes.Both, False, DataTypes.ExhaustiveIdSort)
+    #team_compare(8, 13, "Maze", StatTypes.TeamMean, True, DataTypes.ExhaustiveIdNoSort, DataTypes.ExhaustiveIdSort)
+    #plot_progressive(True, DataTypes.ExhaustiveNoIdNoSort, DataTypes.ExhaustiveIdNoSort, DataTypes.ExhaustiveIdSort)

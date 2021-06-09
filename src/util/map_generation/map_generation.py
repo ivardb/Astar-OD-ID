@@ -238,14 +238,15 @@ def load_map(map_path):
 
 
 if __name__ == '__main__':
-    map_path = "C:/Users/ivard/Documents/Uni/CSE-3/CSE3000 - Research Project/Server/mapf-server/assets/maps/Berlin_1_256.map"
-    grid = load_map(map_path)
-
-    for t in range(2, 21):
-        map_generator = MapGenerator(f"../../../maps/progressive/Progressive-256x256-A20_T{t}/")
-        for s in range(1, 26):
-            scen_path = f"C:/Users/ivard/Documents/Uni/CSE-3/CSE3000 - Research Project/Server/mapf-server/assets/scenarios/even/Berlin_1_256-even-{'0' if s < 10 else ''}{s}.scen"
-            problem = progressive(grid, scen_path, 20, t)
-            map_generator.store_map(f"Progressive-{problem.width}x{problem.height}-A20_T{t}-{'0' if s < 10 else ''}{s}", problem)
-    # for i in range(1, 16):
-    #    map_generator.generate_even_batch(200, 20, 20, i, 3, prefix="Obstacle", min_goal_distance=0, open_factor=0.65, max_neighbors=3)
+    # map_path = "C:/Users/ivard/Documents/Uni/CSE-3/CSE3000 - Research Project/Server/mapf-server/assets/maps/Berlin_1_256.map"
+    # grid = load_map(map_path)
+    #
+    # for t in range(2, 21):
+    #     map_generator = MapGenerator(f"../../../maps/progressive/Progressive-256x256-A20_T{t}/")
+    #     for s in range(1, 26):
+    #         scen_path = f"C:/Users/ivard/Documents/Uni/CSE-3/CSE3000 - Research Project/Server/mapf-server/assets/scenarios/even/Berlin_1_256-even-{'0' if s < 10 else ''}{s}.scen"
+    #         problem = progressive(grid, scen_path, 20, t)
+    #         map_generator.store_map(f"Progressive-{problem.width}x{problem.height}-A20_T{t}-{'0' if s < 10 else ''}{s}", problem)
+    map_generator = MapGenerator(f"../../../maps/additional")
+    for i in range(11, 16):
+       map_generator.generate_even_batch(200, 20, 20, i, 3, prefix="Maze", min_goal_distance=0)
