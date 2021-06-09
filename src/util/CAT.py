@@ -1,6 +1,6 @@
 from typing import List
 
-from src.util.AgentPath import AgentPath
+from src.util.agent_path import AgentPath
 from src.util.coord import Coord
 
 
