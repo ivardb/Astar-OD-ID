@@ -1,7 +1,7 @@
 from typing import List, Optional, Iterator, Tuple
 
-from src.util.agent_path import AgentPath
 from src.util.CAT import CAT
+from src.util.agent_path import AgentPath
 from src.util.coord import Coord
 from src.util.grid import Grid, HeuristicType
 
@@ -53,7 +53,9 @@ class PathSet:
         :param agent_id: The id
         :return: The cost
         """
-        return self.costs[self.mapping[agent_id]] if self.costs[self.mapping[agent_id]] is not None else self.get_heuristic(agent_id)
+        return self.costs[self.mapping[agent_id]] if self.costs[
+                                                         self.mapping[agent_id]] is not None else self.get_heuristic(
+            agent_id)
 
     def get_heuristic(self, agent_id):
         """
