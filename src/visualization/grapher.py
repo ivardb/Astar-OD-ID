@@ -13,6 +13,11 @@ class DataTypes(Enum):
     ExhaustiveNoIdNoSort = 2
     ExhaustiveIdNoSort = 3
     ExhaustiveIdSort = 4
+    Jaap = 5
+    Jonathan = 6
+    Robbin = 7
+    Thom = 8
+    Ivar = 9
 
     def __str__(self):
         if self.value == 1:
@@ -21,16 +26,38 @@ class DataTypes(Enum):
             return "Exhaustive"
         if self.value == 3:
             return "Exhaustive + ID"
-        return "Sorted Exhaustive + ID"
+        if self.value == 4:
+            return "Sorted Exhaustive + ID"
+        if self.value == 5:
+            return "EPEA*"
+        if self.value == 6:
+            return "M*"
+        if self.value == 7:
+            return "CBM"
+        if self.value == 8:
+            return "ICTS"
+        if self.value == 9:
+            return "A*+ID+OD"
 
     def get_color(self):
         if self.value == 1:
-            return "tab:red"
+            return "darkred"
         if self.value == 2:
             return "tab:green"
         if self.value == 3:
             return "tab:orange"
-        return "tab:blue"
+        if self.value == 4:
+            return "tab:blue"
+        if self.value == 5:
+            return "darkred"
+        if self.value == 6:
+            return "tab:green"
+        if self.value == 7:
+            return "tab:orange"
+        if self.value == 8:
+            return "tab:cyan"
+        if self.value == 9:
+            return "tab:blue"
 
 
 class StatTypes(Enum):
@@ -39,6 +66,7 @@ class StatTypes(Enum):
     Both = 3
     TeamMean = 4
     TeamCompletion = 5
+    TeamDeviation = 6
 
     def __str__(self):
         if self.value == 1:
@@ -49,7 +77,9 @@ class StatTypes(Enum):
             return "B"
         if self.value == 4:
             return "TM"
-        return "TC"
+        if self.value == 5:
+            return "TC"
+        return "TD"
 
 
 class ResultLoader:
@@ -171,7 +201,7 @@ def team_double_plot(data1, data3, types, map_type, stat_type):
         for (d1, d3), t in zip(zip(data1, data3), types):
             team1.plot(range(1, len(d1) + 1), list(map(lambda l: l[6], d1)), label=f'{t}', color=t.get_color())
             team3.plot(range(1, len(d3) + 1), list(map(lambda l: l[6], d3)), label=f'{t}', color=t.get_color())
-    else:
+    elif stat_type == StatTypes.TeamCompletion:
         team1.set_title(f"% solved out of 200 {map_type} maps (1 team)")
         team3.set_title(f"% solved out of 200 {map_type} maps (3 teams)")
 
@@ -189,6 +219,22 @@ def team_double_plot(data1, data3, types, map_type, stat_type):
         for (d1, d3), t in zip(zip(data1, data3), types):
             team1.plot(range(1, len(d1) + 1), list(map(lambda l: l[5] * 100, d1)), label=f'{t}', color=t.get_color())
             team3.plot(range(1, len(d3) + 1), list(map(lambda l: l[5] * 100, d3)), label=f'{t}', color=t.get_color())
+    else:
+        team1.set_title(f"Standard deviation of runtime for {map_type} maps (1 team)")
+        team3.set_title(f"Standard deviation of runtime for {map_type} maps (3 teams)")
+
+        team1.xaxis.set_major_locator(MaxNLocator(integer=True))
+        team1.yaxis.set_major_locator(MaxNLocator(integer=True))
+        team3.yaxis.set_major_locator(MaxNLocator(integer=True))
+        team1.set_ylabel("Standard deviation")
+        team3.xaxis.set_major_locator(MaxNLocator(integer=True))
+
+        team3.set_xlabel(f'Number of agents')
+        team3.set_ylabel("Standard deviation")
+
+        for (d1, d3), t in zip(zip(data1, data3), types):
+            team1.plot(range(1, len(d1) + 1), list(map(lambda l: l[7], d1)), label=f'{t}', color=t.get_color())
+            team3.plot(range(1, len(d3) + 1), list(map(lambda l: l[7], d3)), label=f'{t}', color=t.get_color())
     plt.legend()
     return plt
 
@@ -255,7 +301,7 @@ def plot_progressive(save, *types):
     plt.rcParams["figure.figsize"] = (7, 5.33)
     plt.margins(0, 0)
     fig, ax1 = plt.subplots()
-    plt.title("Runtime on Berlin_1_256 for varying team numbers with 20 agents total")
+    plt.title("Runtime on Berlin_1_256 with 20 agents for a varying number of teams")
     plt.xticks(list(range(1, len(data[0]) + 1)))
     ax1.set_ylabel('Average time in seconds')
     ax1.set_xlabel("Number of teams")
@@ -276,10 +322,21 @@ def get_loader(plot_type):
         return ResultLoader("../../../results", "E-NoId-NoSort.txt")
     elif plot_type == DataTypes.ExhaustiveIdNoSort:
         return ResultLoader("../../../results", "E-Id-NoSort.txt")
-    return ResultLoader("../../../results", "E-Id-Sort.txt")
+    elif plot_type == DataTypes.ExhaustiveIdSort:
+        return ResultLoader("../../../results", "E-Id-Sort.txt")
+    elif plot_type == DataTypes.Jaap:
+        return ResultLoader("../../../results/others", "Jaap.txt")
+    elif plot_type == DataTypes.Jonathan:
+        return ResultLoader("../../../results/others", "Jonathan.txt")
+    elif plot_type == DataTypes.Robbin:
+        return ResultLoader("../../../results/others", "Robbin.txt")
+    elif plot_type == DataTypes.Thom:
+        return ResultLoader("../../../results/others", "Thom.txt")
+    elif plot_type == DataTypes.Ivar:
+        return ResultLoader("../../../results", "E-Id-Sort.txt")
 
 
 if __name__ == '__main__':
-    compare(1, 20, "Maze", StatTypes.Both, False, DataTypes.ExhaustiveIdSort)
-    # team_compare(8, 13, "Maze", StatTypes.TeamMean, True, DataTypes.ExhaustiveIdNoSort, DataTypes.ExhaustiveIdSort)
-    # plot_progressive(True, DataTypes.ExhaustiveNoIdNoSort, DataTypes.ExhaustiveIdNoSort, DataTypes.ExhaustiveIdSort)
+    #compare(3, 20, "Obstacle", StatTypes.Both, False, DataTypes.ExhaustiveIdSort)
+    team_compare(20, 20, "Obstacle", StatTypes.TeamCompletion, True, DataTypes.Heuristic, DataTypes.ExhaustiveNoIdNoSort, DataTypes.ExhaustiveIdNoSort ,DataTypes.ExhaustiveIdSort)
+    #plot_progressive(True, DataTypes.ExhaustiveNoIdNoSort, DataTypes.ExhaustiveIdNoSort, DataTypes.ExhaustiveIdSort)
