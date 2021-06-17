@@ -108,8 +108,8 @@ if __name__ == "__main__":
     enable_id = True
     enable_sorting = True
     processes = 10
-    map_root = "../../../maps/progressive"
-    result_root = "../../../results"
+    map_root = "../../maps/progressive"
+    result_root = "../../results"
     queue = BenchmarkQueue("queue.txt")
     runner = MapRunner(map_root, HeuristicType.Exhaustive)
     runner.test_queue(120, queue, os.path.join(result_root, "test.txt"))

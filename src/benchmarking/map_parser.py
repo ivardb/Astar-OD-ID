@@ -46,11 +46,3 @@ class MapParser:
     def parse_batch(self, folder) -> List[Tuple[str, Problem]]:
         paths = os.listdir(os.path.join(self.map_root, folder))
         return [(str(path), self.parse_map(str(os.path.join(folder, path)))) for path in paths]
-
-
-if __name__ == "__main__":
-    parser = MapParser("../../../maps/maps")
-    problems = parser.parse_batch("Obstacle-20x20-A6_T3")
-    average = [sum((sum(row) for row in problem.grid)) / (problem.width * problem.height) * 100 for name, problem in
-               problems]
-    print(sum(average) / len(average))
