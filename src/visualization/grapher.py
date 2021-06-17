@@ -317,23 +317,23 @@ def plot_progressive(save, *types):
 
 def get_loader(plot_type):
     if plot_type == DataTypes.Heuristic:
-        return ResultLoader("../../../results", "H.txt")
+        return ResultLoader("../../results", "H.txt")
     elif plot_type == DataTypes.ExhaustiveNoIdNoSort:
-        return ResultLoader("../../../results", "E-NoId-NoSort.txt")
+        return ResultLoader("../../results", "E-NoId-NoSort.txt")
     elif plot_type == DataTypes.ExhaustiveIdNoSort:
-        return ResultLoader("../../../results", "E-Id-NoSort.txt")
+        return ResultLoader("../../results", "E-Id-NoSort.txt")
     elif plot_type == DataTypes.ExhaustiveIdSort:
-        return ResultLoader("../../../results", "E-Id-Sort.txt")
+        return ResultLoader("../../results", "E-Id-Sort.txt")
     elif plot_type == DataTypes.Jaap:
-        return ResultLoader("../../../results/others", "Jaap.txt")
+        return ResultLoader("../../results/others", "Jaap.txt")
     elif plot_type == DataTypes.Jonathan:
-        return ResultLoader("../../../results/others", "Jonathan.txt")
+        return ResultLoader("../../results/others", "Jonathan.txt")
     elif plot_type == DataTypes.Robbin:
-        return ResultLoader("../../../results/others", "Robbin.txt")
+        return ResultLoader("../../results/others", "Robbin.txt")
     elif plot_type == DataTypes.Thom:
-        return ResultLoader("../../../results/others", "Thom.txt")
+        return ResultLoader("../../results/others", "Thom.txt")
     elif plot_type == DataTypes.Ivar:
-        return ResultLoader("../../../results", "E-Id-Sort.txt")
+        return ResultLoader("../../results", "E-Id-Sort.txt")
 
 
 if __name__ == '__main__':
