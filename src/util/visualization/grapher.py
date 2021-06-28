@@ -183,20 +183,21 @@ def team_double_plot(data1, data3, types, map_type, stat_type):
     plt.margins(0, 0)
 
     fig, (team1, team3) = plt.subplots(2, 1)
-    plt.subplots_adjust(hspace=0.3)
+    plt.subplots_adjust(hspace=0.5)
+    team1.xaxis.set_major_locator(MaxNLocator(integer=True))
+    team1.yaxis.set_major_locator(MaxNLocator(integer=True, nbins=8))
+    team3.xaxis.set_major_locator(MaxNLocator(integer=True))
+    team3.yaxis.set_major_locator(MaxNLocator(integer=True, nbins=8))
 
     if stat_type == StatTypes.TeamMean:
         team1.set_title(f"Average time needed for solved {map_type} maps (1 team)")
         team3.set_title(f"Average time needed for solved {map_type} maps (3 teams)")
 
-        team1.xaxis.set_major_locator(MaxNLocator(integer=True))
-        team1.yaxis.set_major_locator(MaxNLocator(integer=True))
-        team3.yaxis.set_major_locator(MaxNLocator(integer=True))
-        team1.set_ylabel("seconds")
-        team3.xaxis.set_major_locator(MaxNLocator(integer=True))
+        team1.set_ylabel("time (s)")
+        team1.set_xlabel(f'Number of agents')
 
         team3.set_xlabel(f'Number of agents')
-        team3.set_ylabel("seconds")
+        team3.set_ylabel("time (s)")
 
         for (d1, d3), t in zip(zip(data1, data3), types):
             team1.plot(range(1, len(d1) + 1), list(map(lambda l: l[6], d1)), label=f'{t}', color=t.get_color())
@@ -205,12 +206,9 @@ def team_double_plot(data1, data3, types, map_type, stat_type):
         team1.set_title(f"% solved out of 200 {map_type} maps (1 team)")
         team3.set_title(f"% solved out of 200 {map_type} maps (3 teams)")
 
-        team1.xaxis.set_major_locator(MaxNLocator(integer=True))
-        team1.yaxis.set_major_locator(MaxNLocator(integer=True))
-        team3.yaxis.set_major_locator(MaxNLocator(integer=True))
         team1.set_ylabel("% solved")
+        team1.set_xlabel(f'Number of agents')
         team1.set_ylim(0, 105)
-        team3.xaxis.set_major_locator(MaxNLocator(integer=True))
 
         team3.set_xlabel(f'Number of agents')
         team3.set_ylabel("% solved")
@@ -223,11 +221,8 @@ def team_double_plot(data1, data3, types, map_type, stat_type):
         team1.set_title(f"Standard deviation of runtime for {map_type} maps (1 team)")
         team3.set_title(f"Standard deviation of runtime for {map_type} maps (3 teams)")
 
-        team1.xaxis.set_major_locator(MaxNLocator(integer=True))
-        team1.yaxis.set_major_locator(MaxNLocator(integer=True))
-        team3.yaxis.set_major_locator(MaxNLocator(integer=True))
+        team1.set_xlabel(f'Number of agents')
         team1.set_ylabel("Standard deviation")
-        team3.xaxis.set_major_locator(MaxNLocator(integer=True))
 
         team3.set_xlabel(f'Number of agents')
         team3.set_ylabel("Standard deviation")
@@ -236,6 +231,8 @@ def team_double_plot(data1, data3, types, map_type, stat_type):
             team1.plot(range(1, len(d1) + 1), list(map(lambda l: l[7], d1)), label=f'{t}', color=t.get_color())
             team3.plot(range(1, len(d3) + 1), list(map(lambda l: l[7], d3)), label=f'{t}', color=t.get_color())
     plt.legend()
+    team3.grid()
+    team1.grid()
     return plt
 
 
@@ -305,9 +302,14 @@ def plot_progressive(save, *types):
     plt.xticks(list(range(1, len(data[0]) + 1)))
     ax1.set_ylabel('Average time in seconds')
     ax1.set_xlabel("Number of teams")
+    ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
+    ax1.yaxis.set_major_locator(MaxNLocator(integer=True))
+    ax1.set_xlim(1, len(data[0]) + 1)
     for d, t in zip(data, types):
-        ax1.plot(x, list(map(lambda l: l[6], sorted(d, key=lambda l: l[4]))), label=f'{t}', color=t.get_color())
+        graph_data = list(map(lambda l: l[6], sorted(d, key=lambda l: l[4])))
+        ax1.plot(x, graph_data, label=f'{t}', color=t.get_color())
     ax1.legend()
+    plt.grid()
     if save:
         alg_name = ''.join(map(str, sorted(map(lambda l: l.value, types))))
         image_name = f"{alg_name}-M-Progressive.png"
