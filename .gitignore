@@ -618,4 +618,4 @@ Thumbs.db
 # End of https://www.toptal.com/developers/gitignore/api/latex,python,intellij,pycharm
 /apitoken.txt
 /maps/
-/src/util/map_generation/queue.txt
+/src/benchmarking/queue.txt

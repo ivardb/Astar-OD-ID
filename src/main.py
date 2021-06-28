@@ -1,40 +1,21 @@
 import subprocess
 
-from mapfmclient import Problem, Solution, MapfBenchmarker, BenchmarkDescriptor, ProgressiveDescriptor
+from mapfmclient import Problem, MapfBenchmarker, BenchmarkDescriptor, ProgressiveDescriptor
 
-from src.AstarID.IDProblem import IDProblem
-from src.AstarID.MatchingID import MatchingID
-from src.util.AgentPath import AgentPath
-from src.util.grid import HeuristicType, Grid
-from src.util.group import Group
+from Astar_OD_ID.MatchingSolver import MatchingSolver
+from src.util.grid import HeuristicType
 from src.util.logger.logger import Logger
 
 
-def solve_with_id(starting_problem: Problem) -> Solution:
+def solve(starting_problem: Problem):
     print()
-    problem = MatchingID(starting_problem, heuristic_type, enable_sorting=enable_sorting)
+    problem = MatchingSolver(starting_problem, heuristic_type, enable_sorting=enable_sorting,
+                             enable_matchingID=enable_id)
     solution = problem.solve(enable_cat=enable_cat)
     if solution is None:
         print("Failed to find solution")
         return None
     return solution
-
-
-def solve_no_id(starting_problem: Problem):
-    grid = Grid(starting_problem.grid, starting_problem.width, starting_problem.height, starting_problem.starts, starting_problem.goals, heuristic_type)
-    id_problem = IDProblem(grid, heuristic_type, Group(range(len(starting_problem.starts))), enable_sorting=enable_sorting)
-    solution = id_problem.solve()
-    if solution is None:
-        print("Failed to find solution")
-        return None
-    return AgentPath.to_solution(solution)
-
-
-def solve(starting_problem: Problem):
-    if enable_id:
-        return solve_with_id(starting_problem)
-    else:
-        return solve_no_id(starting_problem)
 
 
 def get_version() -> str:
@@ -54,14 +35,14 @@ def get_name() -> str:
 def run_benchmark():
     api_token = open("../apitoken.txt", "r").read().strip()
     benchmark = MapfBenchmarker(api_token, descriptor,
-                                  get_name(), get_version(), debug, solver=solve, cores=1)
+                                get_name(), get_version(), debug, solver=solve, cores=1)
     benchmark.run()
 
 
 def activate_logging():
     loggers = []
     if logMatching:
-        loggers.append("MatchingID")
+        loggers.append("MatchingSolver")
     if logID:
         loggers.append("IDProblem")
     if logSolver:
