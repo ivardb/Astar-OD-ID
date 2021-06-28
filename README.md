@@ -1,4 +1,4 @@
-This code base was used to research extending A*-ID-OD with matching.
+This code base was used for a bachelor thesis on extending A*-ID-OD with matching.
 The paper for this can be found here: http://resolver.tudelft.nl/uuid:8da2b89a-7bed-4459-b468-917b1003e136
 
 # MAPFM with A*-ID-OD
