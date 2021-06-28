@@ -59,6 +59,9 @@ For the paper, two types of random maps where generated as can be found in src/u
 - Mazes: generated with min-distance = 0 and otherwise default parameters.
 - Obstacles: generated with min-distance = 0, max-neighbours = 3, open-factor = 0.65 and otherwise default parameters.
 
+Besides these maps, the files named progressive are of Berlin_1_256 (https://movingai.com/benchmarks/mapf/index.html).
+
+The random maps are proven solvable in "Multi-Agent Pathfinding with Matching using Enhanced Partial Expansion A*" (Jaap de Jong, 2021) and "Matching in Multi-Agent Pathfinding using M*" (Jonathan Dönszelmann, 2021)
 
 # Main method
 The main method of the program uses [mapf.nl](https://mapf.nl) to run benchmarks.
