@@ -2,7 +2,7 @@ from typing import Optional, List, Iterator, Tuple
 
 from mapfmclient import Problem, Solution
 
-from Astar_OD_ID.Astar_ID.IDProblem import IDProblem
+from src.Astar_OD_ID.Astar_ID.IDProblem import IDProblem
 from src.util.CAT import CAT
 from src.util.agent_path import AgentPath
 from src.util.grid import HeuristicType, Grid
@@ -34,7 +34,7 @@ class MatchingSolver:
                 teams[start.color].append(i)
             self.teams = list(map(Group, filter(lambda x: len(x) > 0, teams)))
 
-    def solve(self, enable_cat=True) -> Optional[Solution]:
+    def solve(self, enable_cat: bool = True,upper_bound: Optional[int] = None) -> Optional[Solution]:
         """
         Solve the problem
         :param enable_cat: Option to disable the Collision Avoidance for this layer. Has no effect on normal ID CAT
@@ -43,7 +43,7 @@ class MatchingSolver:
         if not self.enable_matchingID:
             id_problem = IDProblem(self.grid, self.heuristic_type, Group(list(range(len(self.grid.starts)))),
                                    enable_sorting=self.enable_sorting)
-            paths = id_problem.solve()
+            paths = id_problem.solve(upper_bound=upper_bound)
             if paths is None:
                 return None
             return AgentPath.to_solution(paths)

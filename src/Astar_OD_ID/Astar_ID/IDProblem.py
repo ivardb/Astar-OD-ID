@@ -106,14 +106,14 @@ class IDProblem:
             h += self.grid.get_heuristic(Coord(start.x, start.y), index)
         return h
 
-    def solve(self, cat=None) -> Optional[List[AgentPath]]:
+    def solve(self, cat=None,upper_bound: Optional[int] = None) -> Optional[List[AgentPath]]:
         """
         Tries to solve the problem.
         :param cat: An optional Collision Avoidance table to use for all paths.
         :return: A list of paths for the given agents if a solution exists otherwise None
         """
         if self.heuristic_type == HeuristicType.Heuristic:
-            return self.solve_matching(cat)
+            return self.solve_matching(cat = cat, maximum = upper_bound)
         else:
             best = float("inf")
             best_solution = None

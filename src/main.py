@@ -1,11 +1,12 @@
 import subprocess
+from typing import Optional
 
+from mapf_branch_and_bound.bbsolver import solve_bb
 from mapfmclient import Problem, MapfBenchmarker, BenchmarkDescriptor, ProgressiveDescriptor
 
 from Astar_OD_ID.MatchingSolver import MatchingSolver
 from src.util.grid import HeuristicType
 from src.util.logger.logger import Logger
-
 
 def solve(starting_problem: Problem):
     print()
@@ -16,6 +17,20 @@ def solve(starting_problem: Problem):
         print("Failed to find solution")
         return None
     return solution
+
+def solve_subroutine(starting_problem: Problem, upper_bound: Optional[int]):
+    problem = MatchingSolver(starting_problem, heuristic_type = HeuristicType.Heuristic, enable_sorting=False,
+                             enable_matchingID=False)
+    if not upper_bound:
+        upper_bound = float("inf")
+    solution = problem.solve(enable_cat=enable_cat,upper_bound=upper_bound)
+    if solution is None:
+        print("Failed to find solution")
+        return None
+    return solution
+
+def solve_branch_and_bound(problem: Problem):
+    return solve_bb(problem, solve_subroutine)
 
 
 def get_version() -> str:
@@ -35,7 +50,7 @@ def get_name() -> str:
 def run_benchmark():
     api_token = open("../apitoken.txt", "r").read().strip()
     benchmark = MapfBenchmarker(api_token, descriptor,
-                                get_name(), get_version(), debug, solver=solve, cores=1)
+                                "A* + OD + ID with branch and bound", get_version(), debug, solver=solve_branch_and_bound, cores=1)
     benchmark.run()
 
 
@@ -69,7 +84,7 @@ if __name__ == '__main__':
         min_agents=20,
         max_agents=20,
         num_teams=10)
-    descriptor = BenchmarkDescriptor(16)
-    debug = True
+    descriptor = BenchmarkDescriptor(93)
+    debug = False
     version = "1.6.0"
     run_benchmark()
