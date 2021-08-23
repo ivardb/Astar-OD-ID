@@ -23,6 +23,8 @@ def solve_subroutine(starting_problem: Problem, upper_bound: Optional[int]):
                              enable_matchingID=False)
     if not upper_bound:
         upper_bound = float("inf")
+    else:
+        upper_bound += len(starting_problem.starts)
     solution = problem.solve(enable_cat=enable_cat,upper_bound=upper_bound)
     if solution is None:
         print("Failed to find solution")
