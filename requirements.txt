@@ -1,4 +1,4 @@
 mapfmclient==0.2.5
-mapf-branch-and-bound==0.0.2
-mapf-util==0.0.1
 ortools==9.0.9048
+mapf-branch-and-bound==0.0.3
+mapf-util==0.0.1
