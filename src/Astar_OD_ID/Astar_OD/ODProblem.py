@@ -1,6 +1,6 @@
 from typing import Tuple, Iterable, List
 
-from Astar_OD_ID.Astar_OD.ODState import ODState
+from src.Astar_OD_ID.Astar_OD.ODState import ODState
 from src.util.CAT import CAT
 from src.util.agent import Agent
 from src.util.agent_path import AgentPath
