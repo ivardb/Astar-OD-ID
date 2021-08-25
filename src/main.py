@@ -4,7 +4,7 @@ from typing import Optional
 from mapf_branch_and_bound.bbsolver import solve_bb
 from mapfmclient import Problem, MapfBenchmarker, BenchmarkDescriptor, ProgressiveDescriptor
 
-from Astar_OD_ID.MatchingSolver import MatchingSolver
+from src.Astar_OD_ID.MatchingSolver import MatchingSolver
 from src.util.grid import HeuristicType
 from src.util.logger.logger import Logger
 
