@@ -106,7 +106,7 @@ class IDProblem:
             h += self.grid.get_heuristic(Coord(start.x, start.y), index)
         return h
 
-    def solve(self, cat=None,upper_bound: Optional[int] = None) -> Optional[List[AgentPath]]:
+    def solve(self, cat=None,upper_bound: Optional[int] = float("inf")) -> Optional[List[AgentPath]]:
         """
         Tries to solve the problem.
         :param cat: An optional Collision Avoidance table to use for all paths.
@@ -146,6 +146,7 @@ class IDProblem:
         cats.append(paths.cat)
 
         # Create initial agent paths
+        # groups = Groups([Group(list(self.agent_ids))])
         groups = Groups([Group([n]) for n in self.agent_ids])
         for group in groups:
             problem = ODProblem(self.grid, group, cats, assigned_goals=assigned_goals)

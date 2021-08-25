@@ -11,6 +11,7 @@ from src.util.coord import Coord
 class HeuristicType(Enum):
     Heuristic = 1
     Exhaustive = 2
+    Hungarian = 3
 
 
 class Grid:
@@ -39,11 +40,7 @@ class Grid:
         Compute the heuristics based on the type
         :param heuristic_type: The heuristic type
         """
-        if heuristic_type == HeuristicType.Exhaustive:
-            self.heuristics = [self.compute_goal_heuristic(goal.x, goal.y) for goal in self.goals]
-        elif heuristic_type == HeuristicType.Heuristic:
-            max_color = max(goal.color for goal in self.goals)
-            self.heuristics = [self.compute_color_heuristic(color) for color in range(max_color + 1)]
+        self.heuristics = [self.compute_goal_heuristic(goal.x, goal.y) for goal in self.goals]
 
     def compute_goal_heuristic(self, x, y) -> List[List[Optional[int]]]:
         """

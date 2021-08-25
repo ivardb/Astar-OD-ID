@@ -34,7 +34,7 @@ class MatchingSolver:
                 teams[start.color].append(i)
             self.teams = list(map(Group, filter(lambda x: len(x) > 0, teams)))
 
-    def solve(self, enable_cat: bool = True,upper_bound: Optional[int] = None) -> Optional[Solution]:
+    def solve(self, enable_cat: bool = True,upper_bound: Optional[int] = float("inf")) -> Optional[Solution]:
         """
         Solve the problem
         :param enable_cat: Option to disable the Collision Avoidance for this layer. Has no effect on normal ID CAT

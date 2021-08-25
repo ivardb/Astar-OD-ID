@@ -1,4 +1,8 @@
+from copy import copy
 from typing import Tuple, Iterable, List
+
+from mapf_branch_and_bound.assignment_problem import AssignmentProblem
+from mapf_branch_and_bound.assignment_solver import solve_problem
 
 from src.Astar_OD_ID.Astar_OD.ODState import ODState
 from src.util.CAT import CAT
@@ -84,6 +88,36 @@ class ODProblem:
         """
         return self.grid.is_final(state.agents)
 
+    def solve_assignment_problem(self, state: ODState) -> int:
+        # print(len(state.agents),len(state.new_agents))
+        final_agents = list(copy(state.new_agents)) + [state.agents[i] for i in range(len(state.new_agents), len(state.agents))]
+        K: int = len(set(map(lambda agent: agent.color, final_agents)))
+        n: int = len(state.agents)
+        m: int = len(self.grid.goals)
+        reverse_map = enumerate(sorted(set(map(lambda x: x.color, final_agents))))
+        color_map = dict([(sub[1], sub[0]) for sub in reverse_map])
+        Kprime = len(color_map)
+
+        for goal in self.grid.goals:
+            if goal.color not in color_map:
+                color_map[goal.color] = -1
+        # print(color_map)
+        team_id = [color_map[agent.color] for agent in final_agents] + [K] * (m-n)
+        team_tasks = [
+            set([g[0] for g in enumerate(self.grid.goals) if color_map[g[1].color] == team]) for team in range(K)
+        ]
+        team_tasks.append(set(range(m)))
+        # print(team_id,team_tasks)
+        costs = [[0 for _ in range(m)] for _ in range(m)]
+        for (i, agent) in enumerate(final_agents):
+            for (j, goal) in enumerate(self.grid.goals):
+                if agent.color == goal.color:
+                    costs[i][j] = self.grid.get_heuristic(agent.coords,j)
+        assignment_problem = AssignmentProblem(team_id, team_tasks, Kprime+1, m, m)
+
+        return solve_problem(costs, assignment_problem)
+
+
     def heuristic(self, state: ODState) -> int:
         """
         Calculates the heuristic of the state.
@@ -93,17 +127,8 @@ class ODProblem:
         :param state: The state to calculate for.
         :return: The sum of heuristics for all agents in the state.
         """
-        h = 0
-        if self.assigned_goals is None:
-            for agent in state.new_agents:
-                h += self.grid.get_heuristic(agent.coords, agent.color)
-            for j in range(len(state.new_agents), len(state.agents)):
-                h += self.grid.get_heuristic(state.agents[j].coords, state.agents[j].color)
-        else:
-            for agent in state.new_agents:
-                h += self.grid.get_heuristic(agent.coords, self.assigned_goals[agent.id])
-            for j in range(len(state.new_agents), len(state.agents)):
-                h += self.grid.get_heuristic(state.agents[j].coords, self.assigned_goals[state.agents[j].id])
+        h = self.solve_assignment_problem(state)
+        assert h is not None
         return h
 
     def get_cat(self, coords, time) -> int:

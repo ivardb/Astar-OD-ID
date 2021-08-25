@@ -18,6 +18,15 @@ def solve(starting_problem: Problem):
         return None
     return solution
 
+def solve_heur(starting_problem: Problem):
+    problem = MatchingSolver(starting_problem, HeuristicType.Heuristic, enable_sorting=enable_sorting,
+                             enable_matchingID=enable_id)
+    solution = problem.solve(enable_cat=enable_cat)
+    if solution is None:
+        print("Failed to find solution")
+        return None
+    return solution
+
 def solve_subroutine(starting_problem: Problem, upper_bound: Optional[int]):
     problem = MatchingSolver(starting_problem, heuristic_type = HeuristicType.Heuristic, enable_sorting=False,
                              enable_matchingID=False)
@@ -52,7 +61,7 @@ def get_name() -> str:
 def run_benchmark():
     api_token = open("../apitoken.txt", "r").read().strip()
     benchmark = MapfBenchmarker(api_token, descriptor,
-                                "A* + OD + ID with branch and bound", get_version(), debug, solver=solve_branch_and_bound, cores=1)
+                                "A* + OD + ID with Hungarian heuristic", get_version(), debug, solver=solve_heur, cores=1)
     benchmark.run()
 
 
@@ -83,10 +92,10 @@ if __name__ == '__main__':
 
     # Configure benchmark
     progressive_descriptor = ProgressiveDescriptor(
-        min_agents=20,
+        min_agents=1,
         max_agents=20,
-        num_teams=10)
-    descriptor = BenchmarkDescriptor(93)
+        num_teams=2)
+    descriptor = BenchmarkDescriptor(33,progressive_descriptor)
     debug = False
     version = "1.6.0"
     run_benchmark()
